@@ -3,7 +3,7 @@
 
 # CodeRAG Lab（Win10）— 可溯源代码库助手（RAG + 评测 + llama.cpp 部署）
 
-> 把任意开源/本地代码仓库（repo）变成一个 **“能检索、能引用、能评测、可服务化”** 的 RAG 问答系统。  
+> 把任意开源/本地代码仓库（repo）变成一个 **"能检索、能引用、能评测、可服务化"** 的 RAG 问答系统。  
 > **简历定位**：可溯源 RAG（Citations） + 评测体系（Eval/Regression） + 工程化服务（API/Deploy/CI）。
 
 ---
@@ -89,7 +89,7 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/chat" `
 ```
       +------------------+
       |  Web/Client/curl |
-      +--------+---------+
+      +--------+---------
                |
                v
         +------+-------+             +----------------------+
@@ -158,7 +158,7 @@ coderag-lab/
 ## 4. 配置（.env）
 
 > ✅ 建议只保留 **一套命名**，避免后期混乱。
-> 本项目推荐使用“OpenAI 兼容服务”的配置方式：`LLM_BASE_URL` + `LLM_MODEL`。
+> 本项目推荐使用"OpenAI 兼容服务"的配置方式：`LLM_BASE_URL` + `LLM_MODEL`。
 
 复制 `.env.example` 为 `.env`，并按需修改：
 
@@ -261,7 +261,7 @@ poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 
 ## 7. 评测（Eval）
 
-> **评测是“玩具 vs 生产”的分水岭**：你最终要能回答——“效果好不好？改动后变好了还是变差了？”
+> **评测是"玩具 vs 生产"的分水岭**：你最终要能回答——"效果好不好？改动后变好了还是变差了？"
 
 ### 7.1 评测数据格式
 
@@ -287,7 +287,7 @@ poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 
 字段说明：
 
-* `must_cite_sources`：期望检索命中的“黄金来源路径”（用于命中率）
+* `must_cite_sources`：期望检索命中的"黄金来源路径"（用于命中率）
 * `answer_must_contain`：回答必须包含的关键词（规则评测）
 * `tags`：便于分组统计（后续可做 per-tag 指标）
 
@@ -326,7 +326,7 @@ poetry run python -m coderag.cli eval --dataset "data/eval/coderag_eval_v1.json"
 
 ## 9. 工程化亮点（写简历时怎么量化）
 
-你可以把这些写成“可验证成果”：
+你可以把这些写成"可验证成果"：
 
 * **可溯源回答**：回答引用 `[SOURCE n]`，并返回引用片段与来源路径
 * **离线评测**：自建评测集 N 条；`hit_rate@k` / `citation_rate` 等指标可复现
@@ -384,12 +384,12 @@ docker compose logs -f
 
 4. **反馈闭环**
 
-   * 做法：记录用户对回答的“有用/没用”，作为下一轮优化依据
+   * 做法：记录用户对回答的"有用/没用"，作为下一轮优化依据
    * 验收：能导出反馈数据并做简单统计
 
 5. **更严格评测**
 
-   * 做法：加入“引用必须来自检索片段白名单”的校验
+   * 做法：加入"引用必须来自检索片段白名单"的校验
    * 验收：`伪引用率` 可统计并下降
 
 ---
@@ -407,6 +407,5 @@ MIT
 2) **统一 env 命名**：保留 `LLM_BASE_URL/LLM_MODEL/QDRANT_URL/...` 这一套即可；你那套 `LLAMACPP_HOST/PORT/MODEL_PATH` 会和 OpenAI 兼容调用方式冲突、也更难维护。  
 3) **Quickstart 前置**：招聘/面试的人只看 30 秒，Quickstart 放最上面提升转化率。
 
-如果你把你仓库的 **实际 CLI 命令/文件名**（比如 `coderag.cli ingest` 还是 `ingest-repo`）确认一下，我还能再做一次“完全对齐代码实现”的最终版，保证 README 命令 100% 可跑。
-::contentReference[oaicite:0]{index=0}
+如果你把你仓库的 **实际 CLI 命令/文件名**（比如 `coderag.cli ingest` 还是 `ingest-repo`）确认一下，我还能再做一次"完全对齐代码实现"的最终版，保证 README 命令 100% 可跑。
 ```
