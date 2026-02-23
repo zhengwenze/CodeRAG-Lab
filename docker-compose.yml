@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+    environment:
+      - PROJECT_NAME=CodeRAG Lab
+      - ENVIRONMENT=development
+      - DEBUG=True
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - VECTOR_STORE=qdrant
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - QDRANT_COLLECTION=coderag
+      - EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+      - EMBEDDING_DIM=384
+      - LLM_PROVIDER=llamacpp
+      - LLAMACPP_HOST=llamacpp
+      - LLAMACPP_PORT=8080
+      - LLAMACPP_MODEL_PATH=/models/model.gguf
+      - TOP_K=5
+      - TOP_P=0.95
+      - TEMPERATURE=0.7
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=100
+      - LOG_LEVEL=INFO
+      - EVAL_DATASET_PATH=data/eval/coderag_eval_v1.json
+      - EVAL_OUTPUT_PATH=data/runs/
+      - DATA_DIR=data
+    depends_on:
+      - qdrant
+      - llamacpp
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./data/qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__STORAGE__STORAGE_PATH=/qdrant/storage
+
+  llamacpp:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./models:/models
+    command: --host 0.0.0.0 --port 8080 --model /models/model.gguf --n-gpu-layers 0
+    environment:
+      - MODEL_PATH=/models/model.gguf

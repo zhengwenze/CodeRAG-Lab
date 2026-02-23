@@ -1,0 +1,27 @@
+[
+    {
+        "question": "CodeRAG Lab的核心功能是什么？",
+        "ground_truth": "CodeRAG Lab是一个可溯源代码库助手，核心功能包括代码库入库、检索、重排、生成回答、引用溯源、评测回归、服务化部署和反馈闭环。",
+        "relevant_docs": ["src/coderag/api/main.py", "README.md"]
+    },
+    {
+        "question": "如何运行CodeRAG Lab的评测？",
+        "ground_truth": "可以使用make eval命令运行评测，评测系统会计算Recall@k、MRR等指标。",
+        "relevant_docs": ["Makefile", "src/coderag/eval/runner.py"]
+    },
+    {
+        "question": "CodeRAG Lab支持哪些推理引擎？",
+        "ground_truth": "CodeRAG Lab主要支持llama.cpp（GGUF量化模型），也可选HF Transformers作为开发备用。",
+        "relevant_docs": ["src/coderag/llm/provider.py", "src/coderag/llm/llamacpp_openai.py"]
+    },
+    {
+        "question": "如何使用Docker启动CodeRAG Lab？",
+        "ground_truth": "可以使用docker compose up -d命令一键启动CodeRAG Lab，包括API服务、Qdrant向量库和llama.cpp推理服务。",
+        "relevant_docs": ["docker-compose.yml", "README.md"]
+    },
+    {
+        "question": "CodeRAG Lab的分块策略是什么？",
+        "ground_truth": "CodeRAG Lab支持按文件长度分块和按函数分块两种策略。",
+        "relevant_docs": ["src/coderag/ingest/chunker.py"]
+    }
+]
