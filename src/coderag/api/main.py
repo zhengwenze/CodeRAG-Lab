@@ -82,35 +82,81 @@ async def health_check(request: Request):
 
 @app.post("/chat")
 async def chat(request: Request, chat_request: ChatRequest):
-    """聊天端点"""
+    """聊天端点，实现RAG问答"""
     request_id = getattr(request.state, "request_id", "")
-    logger.info(f"Chat request received: {chat_request.message[:50]}...", extra={"request_id": request_id})
+    logger.info(f"Chat request received: {chat_request.messages[-1].content[:50]}...", extra={"request_id": request_id})
     
     try:
-        # 暂时返回mock数据
+        # 获取最后一条用户消息
+        user_message = None
+        for msg in reversed(chat_request.messages):
+            if msg.role == "user":
+                user_message = msg.content
+                break
+        
+        if not user_message or not user_message.strip():
+            raise HTTPException(status_code=400, detail="User message cannot be empty")
+        
+        from coderag.rag.retriever import Retriever
+        from coderag.rag.prompt import PromptTemplate
+        from coderag.llm.provider import LLMProviderFactory
+        from coderag.settings import settings
+        
+        # 生成查询嵌入
+        llm = LLMProviderFactory.get_provider(settings.llm_provider)
+        embedding = llm.embed(user_message)
+        
+        # 检索相关片段
+        retriever = Retriever()
+        results = retriever.retrieve(
+            query=user_message,
+            embedding=embedding,
+            top_k=chat_request.top_k
+        )
+        
+        # 构建上下文
+        contexts = [
+            {
+                'file_path': result['file_path'],
+                'content': result['content'],
+                'start_line': result.get('start_line'),
+                'end_line': result.get('end_line'),
+            }
+            for result in results
+        ]
+        
+        # 构建Prompt并调用LLM
+        prompt = PromptTemplate.rag_prompt(user_message, contexts)
+        answer = llm.generate(prompt)
+        
+        # 构建引用
         references = [
             Reference(
-                file_path="src/coderag/api/main.py",
-                start_line=1,
-                end_line=10,
-                content="from fastapi import FastAPI, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware",
-                score=0.95,
+                file_path=result['file_path'],
+                start_line=result.get('start_line'),
+                end_line=result.get('end_line'),
+                content=result['content'],
+                score=result['score'],
             )
+            for result in results
         ]
+        
+        # 构建检索结果
         retrieval_results = [
             RetrievalResult(
-                file_path="src/coderag/api/main.py",
-                content="from fastapi import FastAPI, HTTPException",
-                score=0.95,
-                rank=1,
+                file_path=result['file_path'],
+                content=result['content'],
+                score=result['score'],
+                rank=result['rank'],
             )
+            for result in results
         ]
         
         response = ChatResponse(
             id=request_id,
-            message="这是一个mock回答",
-            references=references,
-            retrieval_results=retrieval_results,
+            message=answer,
+            references=references if chat_request.include_hits else [],
+            retrieval_results=retrieval_results if chat_request.include_hits else [],
             timestamp=datetime.utcnow(),
         )
         

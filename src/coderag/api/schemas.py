@@ -9,10 +9,16 @@ class HealthCheck(BaseModel):
     version: str
 
 
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="消息角色")
+    content: str = Field(..., description="消息内容")
+
+
 class ChatRequest(BaseModel):
-    message: str = Field(..., description="用户问题")
+    messages: List[ChatMessage] = Field(..., description="对话消息列表")
     top_k: int = Field(5, description="检索结果数量")
     stream: bool = Field(True, description="是否流式输出")
+    include_hits: bool = Field(True, description="是否包含检索结果")
 
 
 class ChatResponse(BaseModel):

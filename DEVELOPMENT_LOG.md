@@ -1,5 +1,76 @@
 # CodeRAG Lab 开发日志
 
+## 2026-02-24 - Week 3: RAG问答系统完整实现
+
+### 今日完成的工作
+
+1. **更新ChatRequest数据模型**
+   - 将单条消息改为消息列表，支持多轮对话
+   - 添加include_hits参数控制是否返回检索结果
+
+2. **实现RAG问答功能**
+   - 更新/chat端点，实现完整的RAG问答流程
+   - 支持检索相关文档片段、构建Prompt、调用LLM生成回答
+   - 返回带引用的回答和检索结果
+
+3. **添加sentence-transformers依赖**
+   - 在pyproject.toml中添加sentence-transformers依赖
+   - 用于生成文本嵌入向量
+
+4. **创建嵌入提供者**
+   - 创建src/coderag/llm/embedding.py
+   - 实现EmbeddingProvider类，支持文本嵌入生成
+   - 使用BAAI/bge-small-en-v1.5模型
+
+5. **更新LLM提供者**
+   - 修改provider.py中的LlamaCppOpenAI类
+   - 添加embed方法，支持生成文本嵌入
+
+6. **更新测试用例**
+   - 更新test_api.py中的测试用例
+   - 适配新的请求格式（messages列表）
+
+### 遇到的问题与解决方案
+
+1. **测试失败422错误**
+   - 问题：请求格式不匹配（使用message而非messages列表）
+   - 解决方案：更新测试用例使用新的消息格式
+
+2. **LlamaCppOpenAI抽象类实例化错误**
+   - 问题：使用Mixin时无法实例化抽象类
+   - 解决方案：直接在LlamaCppOpenAI类中实现embed方法
+
+### 代码提交
+
+- **提交信息**：Week 3: 实现RAG问答系统完整功能
+- **提交内容**：更新API端点、添加嵌入提供者、更新测试用例等
+- **远程推送**：成功推送到GitHub仓库main分支
+
+### 测试结果
+
+所有11个测试用例均通过：
+- test_health_check - 健康检查端点测试
+- test_chat_endpoint - 聊天端点测试
+- test_chat_endpoint_invalid_input - 无效输入测试
+- test_chunker_basic - 分块功能测试
+- test_settings_load - 配置加载测试
+- test_exception_handling - 异常处理测试
+- test_faiss_store_init - FAISS存储初始化测试
+- test_faiss_store_add_points - FAISS添加向量测试
+- test_faiss_store_search - FAISS检索测试
+- test_faiss_store_clear_index - FAISS清空索引测试
+- test_faiss_store_persistence - FAISS持久化测试
+
+### 下一步计划
+
+1. Week 4：优化评测系统，增加更多评测指标
+2. Week 5：实现反馈闭环，支持用户反馈收集和分析
+3. Week 6：进行性能优化和系统调优
+
+### 项目状态
+
+✅ **Week 3任务已完成**：RAG问答系统完整实现，包括检索、Prompt拼接、LLM生成回答等功能。
+
 ## 2026-02-24 - Week 2: FAISS本地向量存储和检索功能
 
 ### 今日完成的工作

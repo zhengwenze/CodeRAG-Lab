@@ -18,6 +18,7 @@ dependencies = [
     "click",
     "python-dotenv",
     "faiss-cpu",
+    "sentence-transformers",
 ] 
 
 [build-system]

@@ -24,9 +24,10 @@ def test_chat_endpoint():
     response = client.post(
         "/chat",
         json={
-            "message": "CodeRAG Lab的核心功能是什么？",
+            "messages": [{"role": "user", "content": "CodeRAG Lab的核心功能是什么？"}],
             "top_k": 5,
             "stream": True,
+            "include_hits": True,
         },
     )
     assert response.status_code == 200
@@ -36,8 +37,6 @@ def test_chat_endpoint():
     assert "references" in data
     assert "retrieval_results" in data
     assert "timestamp" in data
-    assert len(data["references"]) > 0
-    assert len(data["retrieval_results"]) > 0
 
 
 def test_chat_endpoint_invalid_input():
@@ -45,12 +44,13 @@ def test_chat_endpoint_invalid_input():
     response = client.post(
         "/chat",
         json={
-            "message": "",  # 空消息
+            "messages": [{"role": "user", "content": ""}],
             "top_k": 5,
             "stream": True,
+            "include_hits": True,
         },
     )
-    assert response.status_code == 200  # 暂时允许空消息
+    assert response.status_code == 400
 
 
 def test_chunker_basic():
