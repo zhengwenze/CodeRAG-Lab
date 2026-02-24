@@ -39,7 +39,7 @@ class Chunker:
             
             struct_content = '\n'.join(lines[start_line-1:end_line])
             
-            if len(struct_content.strip()) < 50:
+            if len(struct_content.strip()) < 30:
                 continue
             
             chunk = {
@@ -108,14 +108,19 @@ class Chunker:
         i = start_idx + 1
         while i < total_lines:
             line = lines[i]
-            if not line.strip():
+            stripped = line.strip()
+            
+            if not stripped:
                 i += 1
                 continue
             
             current_indent = len(line) - len(line.lstrip())
             
-            if current_indent <= base_indent and line.strip():
-                return i
+            if current_indent <= base_indent:
+                if stripped.startswith('class ') or stripped.startswith('def ') or stripped.startswith('async def '):
+                    return i
+                elif block_type == 'class' and current_indent == 0:
+                    return i
             
             i += 1
         
