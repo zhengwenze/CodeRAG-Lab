@@ -159,7 +159,7 @@ class EvaluationRunner:
         with open(previous_file, 'r', encoding='utf-8') as f:
             previous = json.load(f)
         
-        current = self.run_evaluation()
+        current = self._get_current_results()
         
         comparison = self._compute_diff(previous, current)
         
@@ -224,6 +224,83 @@ class EvaluationRunner:
             'metrics_diff': metrics_diff,
             'regressions': regressions,
         }
+
+    def _get_current_results(self) -> Dict[str, Any]:
+        """获取当前评测结果（不重新运行）"""
+        results = {
+            'dataset_name': self.dataset.dataset_name,
+            'repo_name': self.dataset.repo_name,
+            'total_questions': len(self.dataset),
+            'top_k': self.top_k,
+            'timestamp': datetime.utcnow().isoformat(),
+            'questions': [],
+            'metrics': {},
+            'tag_metrics': {},
+        }
+
+        question_results = []
+        tags_map = {}
+
+        for item in self.dataset.data:
+            question_id = item.get('id', 'unknown')
+            question = item.get('question', '')
+            gold = item.get('gold', {})
+            must_cite_sources = gold.get('must_cite_sources', [])
+            answer_must_contain = gold.get('answer_must_contain', [])
+            tags = item.get('tags', [])
+            
+            tags_map[question_id] = tags
+
+            embedding = self.llm.embed(question)
+            retrieved_docs = self.retriever.retrieve(question, embedding, self.top_k)
+
+            if self.skip_llm:
+                answer = ""
+            else:
+                contexts = [
+                    {
+                        'file_path': doc.get('file_path', ''),
+                        'content': doc.get('content', ''),
+                        'start_line': doc.get('start_line'),
+                        'end_line': doc.get('end_line'),
+                    }
+                    for doc in retrieved_docs
+                ]
+                prompt = PromptTemplate.rag_prompt(question, contexts)
+                answer = self.llm.generate(prompt)
+
+            metrics_result = EvaluationMetrics.compute_all_metrics(
+                question_id=question_id,
+                question=question,
+                answer=answer,
+                retrieved_docs=retrieved_docs,
+                must_cite_sources=must_cite_sources,
+                answer_must_contain=answer_must_contain,
+                k=self.top_k
+            )
+
+            question_results.append(metrics_result)
+
+            results['questions'].append({
+                'question_id': question_id,
+                'question': question,
+                'answer': answer if answer else None,
+                'retrieved_sources': metrics_result['retrieved_sources'],
+                'hit_rate_at_k': metrics_result['hit_rate_at_k'],
+                'recall_at_k': metrics_result['recall_at_k'],
+                'mrr': metrics_result['mrr'],
+                'citation_rate': metrics_result['citation_rate'],
+                'contains_rate': metrics_result['contains_rate'],
+            })
+
+        aggregated = EvaluationMetrics.aggregate_metrics(question_results)
+        results['metrics'] = aggregated
+
+        tag_metrics = EvaluationMetrics.aggregate_by_tag(question_results, tags_map)
+        results['tag_metrics'] = tag_metrics
+
+        self.save_results(results)
+        return results
 
 
 class RegressionTestRunner:
