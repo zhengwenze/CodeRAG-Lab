@@ -214,6 +214,73 @@ async def ask(request: Request, ask_request: AskRequest):
         raise
 
 
+@app.post("/eval/run")
+async def run_evaluation(request: Request):
+    """运行评测"""
+    from coderag.eval.runner import EvaluationRunner
+    from coderag.settings import settings
+    
+    try:
+        runner = EvaluationRunner(
+            dataset_path=settings.eval_dataset_path,
+            top_k=settings.top_k,
+            skip_llm=True
+        )
+        results = runner.run_evaluation()
+        
+        return {
+            "status": "completed",
+            "dataset_name": results.get("dataset_name"),
+            "total_questions": results.get("total_questions"),
+            "metrics": results.get("metrics"),
+            "timestamp": results.get("timestamp"),
+        }
+    except Exception as e:
+        logger.error(f"Error running evaluation: {e}", exc_info=e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/eval/results")
+async def get_evaluation_results():
+    """获取最新的评测结果"""
+    import os
+    from pathlib import Path
+    
+    eval_output_path = Path(settings.eval_output_path)
+    if not eval_output_path.exists():
+        return {"results": [], "message": "No evaluation results found"}
+    
+    result_files = sorted(eval_output_path.glob("coderag_eval_v1_*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+    
+    if not result_files:
+        return {"results": [], "message": "No evaluation results found"}
+    
+    results = []
+    for f in result_files[:10]:
+        results.append({
+            "filename": f.name,
+            "path": str(f),
+        })
+    
+    return {"results": results}
+
+
+@app.get("/eval/results/{filename}")
+async def get_evaluation_result(filename: str):
+    """获取指定评测结果文件"""
+    import json
+    from pathlib import Path
+    
+    file_path = Path(settings.eval_output_path) / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Result file not found")
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    return data
+
+
 if __name__ == "__main__":
     logger.info(f"Starting CodeRAG Lab service on {settings.api_host}:{settings.api_port}")
     uvicorn.run(
