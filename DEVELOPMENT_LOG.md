@@ -1,5 +1,75 @@
 # CodeRAG Lab 开发日志
 
+## 2026-02-25 - Week 5: 优化检索与文档处理（rerank + chunking 优化）
+
+### 今日完成的工作
+
+1. **优化 chunking 策略**
+   - 重写 Chunker 类，支持按 Python 代码结构（类/函数/异步函数）智能分块
+   - 新增 chunk_python_by_structure 方法，解析 Python AST 结构
+   - 新增 _parse_python_structure 方法，提取类、函数定义
+   - 新增 _find_block_end 方法，根据缩进找到代码块结束行
+   - 保留 chunk_by_fixed_size 作为 fallback 方案
+   - Python 文件优先使用结构化分块，其他文件使用固定大小分块
+
+2. **调整 chunking 参数配置**
+   - 将 chunk_size 从 1000 提升到 2000，更好地容纳完整函数/类
+   - 将 chunk_overlap 从 100 提升到 200，增强上下文连贯性
+   - 更新 settings.py、.env.example、docker-compose.yml 三处配置
+
+3. **实现 BM25 检索重排功能**
+   - 新增 rank-bm25 依赖到 pyproject.toml
+   - 创建 bm25_rerank.py，实现 BM25Reranker 和 HybridRetriever 类
+   - BM25Reranker: 基于 BM25 算法的重排器，支持文档索引和评分
+   - HybridRetriever: 混合检索器，结合向量检索和 BM25 重排
+   - 更新 Retriever 类，集成 hybrid_retrieve 和 rerank 方法
+   - 支持 use_rerank 参数控制是否启用重排
+   - 综合评分 = vector_weight * 向量分数 + bm25_weight * BM25 分数
+
+4. **优化 Qdrant payload 支持结构化分块**
+   - 更新 QdrantStore.add_points 方法，支持存储结构化分块信息
+   - 新增 structure_type 和 structure_name 字段到 payload
+   - 保留对旧数据的兼容性
+
+### 遇到的问题与解决方案
+
+1. **chunking 策略选择**
+   - 问题：简单按行分块会导致函数/类被切断
+   - 解决方案：解析 Python 代码结构，按类/函数边界分块
+
+2. **chunk 大小选择**
+   - 问题：chunk 太小无法包含完整函数，太大影响检索精度
+   - 解决方案：调整为 2000，平衡完整性和精度
+
+3. **BM25 依赖**
+   - 问题：需要 BM25 算法支持
+   - 解决方案：添加 rank-bm25 库
+
+### 代码提交
+
+- **提交信息**：Week 5: 优化检索与文档处理（rerank + chunking 优化）
+- **提交内容**：chunker.py、settings.py、bm25_rerank.py、retriever.py、qdrant_store.py 等
+- **远程推送**：待执行
+
+### 测试结果
+
+- Python 语法检查通过
+
+### 下一步计划
+
+1. Week 6：集成 LoRA 微调与训练
+2. Week 7：前端展示与用户交互
+3. Week 8：API 优化与部署
+
+### 项目状态
+
+✅ **Week 5 任务已完成**：检索优化，包括：
+- 智能 chunking（按函数/类分块）
+- BM25 检索重排
+- 参数优化配置
+
+---
+
 ## 2026-02-24 - Week 4: 评测功能完善与回归测试框架
 
 ### 今日完成的工作
@@ -42,6 +112,11 @@
    - 添加 regression 子命令，用于运行回归测试
    - ingest-repo 作为 ingest 的别名
 
+7. **新增评测 API 端点**
+   - POST /eval/run: 运行评测
+   - GET /eval/results: 获取评测结果列表
+   - GET /eval/results/{filename}: 获取指定评测结果文件
+
 ### 遇到的问题与解决方案
 
 1. **评测数据集格式不匹配**
@@ -55,6 +130,10 @@
 3. **缺少回归测试机制**
    - 问题：无法追踪系统改动后的性能变化
    - 解决方案：实现 RegressionTestRunner，自动对比历史结果
+
+4. **compare_with_previous 重复执行评测**
+   - 问题：每次对比都会重新运行评测，效率低下
+   - 解决方案：新增 _get_current_results 方法，避免重复执行
 
 ### 代码提交
 
@@ -80,6 +159,8 @@
 - hit_rate@k、citation_rate、contains_rate 等核心指标
 - 回归测试框架
 - CLI 命令行支持
+
+---
 
 ## 2026-02-24 - Week 3: RAG问答系统完整实现
 
@@ -151,6 +232,8 @@
 ### 项目状态
 
 ✅ **Week 3任务已完成**：RAG问答系统完整实现，包括检索、Prompt拼接、LLM生成回答等功能。
+
+---
 
 ## 2026-02-24 - Week 2: FAISS本地向量存储和检索功能
 
@@ -243,6 +326,8 @@
 
 ✅ **Week 2任务已完成**：FAISS本地向量存储、/ask端点、CLI更新、测试用例等所有任务均已实现并通过测试。
 
+---
+
 ## 2026-02-23 - Week 1: 项目初始化与基础功能实现
 
 ### 今日完成的工作
@@ -328,7 +413,6 @@
 3. **Week 3**：开发前端Demo，提供更友好的用户界面
 4. **Week 4**：优化评测系统，增加更多评测指标
 5. **Week 5**：实现反馈闭环，支持用户反馈收集和分析
-6. **Week 6**：进行性能优化和系统调优
 
 ### 项目状态
 
