@@ -51,7 +51,19 @@ class EvaluationResult(BaseModel):
     timestamp: datetime
 
 
+class AskRequest(BaseModel):
+    query: str = Field(..., description="用户查询")
+    top_k: int = Field(5, description="检索结果数量")
+
+
+class AskResponse(BaseModel):
+    query: str
+    results: List[RetrievalResult]
+    timestamp: datetime
+
+
 # 解决循环引用
 Reference.model_rebuild()
 RetrievalResult.model_rebuild()
 ChatResponse.model_rebuild()
+AskResponse.model_rebuild()

@@ -6,7 +6,7 @@ import uvicorn
 import uuid
 
 from coderag.settings import settings
-from coderag.api.schemas import HealthCheck, ChatRequest, ChatResponse, Reference, RetrievalResult
+from coderag.api.schemas import HealthCheck, ChatRequest, ChatResponse, Reference, RetrievalResult, AskRequest, AskResponse
 from coderag.logging import get_logger
 from coderag.exceptions import CodeRAGException, handle_exception
 
@@ -118,6 +118,53 @@ async def chat(request: Request, chat_request: ChatRequest):
         return response
     except Exception as e:
         logger.error(f"Error processing chat request: {e}", extra={"request_id": request_id}, exc_info=e)
+        raise
+
+
+@app.post("/ask")
+async def ask(request: Request, ask_request: AskRequest):
+    """检索端点，返回top-k片段"""
+    request_id = getattr(request.state, "request_id", "")
+    logger.info(f"Ask request received: {ask_request.query[:50]}...", extra={"request_id": request_id})
+    
+    try:
+        from coderag.rag.retriever import Retriever
+        from coderag.llm.provider import LLMProviderFactory
+        from coderag.settings import settings
+        
+        # 生成查询嵌入
+        llm = LLMProviderFactory.get_provider(settings.llm_provider)
+        embedding = llm.embed(ask_request.query)
+        
+        # 检索相关片段
+        retriever = Retriever()
+        results = retriever.retrieve(
+            query=ask_request.query,
+            embedding=embedding,
+            top_k=ask_request.top_k
+        )
+        
+        # 转换为RetrievalResult格式
+        retrieval_results = [
+            RetrievalResult(
+                file_path=result['file_path'],
+                content=result['content'],
+                score=result['score'],
+                rank=result['rank'],
+            )
+            for result in results
+        ]
+        
+        response = AskResponse(
+            query=ask_request.query,
+            results=retrieval_results,
+            timestamp=datetime.utcnow(),
+        )
+        
+        logger.info(f"Ask request processed successfully, retrieved {len(results)} results", extra={"request_id": request_id})
+        return response
+    except Exception as e:
+        logger.error(f"Error processing ask request: {e}", extra={"request_id": request_id}, exc_info=e)
         raise
 
 

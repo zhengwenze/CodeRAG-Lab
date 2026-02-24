@@ -169,9 +169,14 @@ LLM_BASE_URL=http://127.0.0.1:8080/v1
 LLM_API_KEY=none
 LLM_MODEL=local-gguf
 
-# ---- Vector DB (Qdrant) ----
+# ---- Vector DB ----
+VECTOR_STORE=faiss  # faiss 或 qdrant
 QDRANT_URL=http://127.0.0.1:6333
 QDRANT_COLLECTION=coderag_chunks
+
+# ---- FAISS Config ----
+FAISS_INDEX_PATH=data/faiss_index
+FAISS_METADATA_PATH=data/faiss_metadata.pkl
 
 # ---- Embedding / Chunking ----
 EMBED_MODEL=sentence-transformers/all-MiniLM-L6-v2
@@ -185,6 +190,12 @@ TOP_K=6
 APP_HOST=127.0.0.1
 APP_PORT=8000
 ```
+
+### 4.1 Week 2 新增配置
+
+- `VECTOR_STORE`：向量存储选择，支持 `faiss`（本地）或 `qdrant`
+- `FAISS_INDEX_PATH`：FAISS 索引文件路径
+- `FAISS_METADATA_PATH`：FAISS 元数据文件路径
 
 > ⚠️ 如果你改 embedding 模型，向量维度可能变化，需要同步调整 Qdrant collection 的向量维度（初期建议先别换 embedding）。
 
@@ -242,6 +253,42 @@ APP_PORT=8000
     { "score": 0.78, "source": "src/coderag/api/main.py", "chunk_id": "xxx", "text": "..." }
   ],
   "debug": { "top_k": 6 }
+}
+```
+
+### 5.4 `POST /ask` (Week 2 新增)
+
+**功能**：返回检索到的 top-k 片段（不进行 LLM 生成）
+
+请求：
+
+```json
+{
+  "query": "Where is the FastAPI app created?",
+  "top_k": 5
+}
+```
+
+响应：
+
+```json
+{
+  "query": "Where is the FastAPI app created?",
+  "results": [
+    {
+      "file_path": "src/coderag/api/main.py",
+      "content": "from fastapi import FastAPI, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware",
+      "score": 0.95,
+      "rank": 1
+    },
+    {
+      "file_path": "src/coderag/api/main.py",
+      "content": "app = FastAPI(\n    title=settings.project_name,\n    version=\"0.1.0\",\n    description=\"可溯源代码库助手\",\n)",
+      "score": 0.92,
+      "rank": 2
+    }
+  ],
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 

@@ -42,11 +42,11 @@ def ingest(repo_path):
         embedded_chunks.append(chunk)
     click.echo(f"Generated embeddings for {len(embedded_chunks)} chunks")
 
-    # 存储到Qdrant
-    qdrant_store = QdrantStore()
-    qdrant_store.create_collection()
-    qdrant_store.add_points(embedded_chunks)
-    click.echo("Ingestion completed successfully")
+    # 根据配置选择存储
+    from coderag.rag.retriever import Retriever
+    retriever = Retriever()
+    retriever.add_points(embedded_chunks)
+    click.echo(f"Ingestion completed successfully using {settings.vector_store}")
 
 
 @cli.command()

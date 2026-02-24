@@ -17,7 +17,8 @@ dependencies = [
     "qdrant-client",
     "click",
     "python-dotenv",
-]
+    "faiss-cpu",
+] 
 
 [build-system]
 requires = ["setuptools", "wheel"]
