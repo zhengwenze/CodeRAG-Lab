@@ -1,27 +1,78 @@
-[
+{
+  "dataset_name": "coderag_eval_v1",
+  "repo_name": "coderag-lab",
+  "items": [
     {
-        "question": "CodeRAG Lab的核心功能是什么？",
-        "ground_truth": "CodeRAG Lab是一个可溯源代码库助手，核心功能包括代码库入库、检索、重排、生成回答、引用溯源、评测回归、服务化部署和反馈闭环。",
-        "relevant_docs": ["src/coderag/api/main.py", "README.md"]
+      "id": "q1",
+      "question": "CodeRAG Lab的核心功能是什么？",
+      "gold": {
+        "must_cite_sources": ["src/coderag/api/main.py", "README.md"],
+        "answer_must_contain": ["可溯源", "RAG", "代码库助手"]
+      },
+      "tags": ["architecture", "core"]
     },
     {
-        "question": "如何运行CodeRAG Lab的评测？",
-        "ground_truth": "可以使用make eval命令运行评测，评测系统会计算Recall@k、MRR等指标。",
-        "relevant_docs": ["Makefile", "src/coderag/eval/runner.py"]
+      "id": "q2",
+      "question": "如何运行CodeRAG Lab的评测？",
+      "gold": {
+        "must_cite_sources": ["Makefile", "src/coderag/eval/runner.py"],
+        "answer_must_contain": ["make", "eval", "Recall"]
+      },
+      "tags": ["usage", "eval"]
     },
     {
-        "question": "CodeRAG Lab支持哪些推理引擎？",
-        "ground_truth": "CodeRAG Lab主要支持llama.cpp（GGUF量化模型），也可选HF Transformers作为开发备用。",
-        "relevant_docs": ["src/coderag/llm/provider.py", "src/coderag/llm/llamacpp_openai.py"]
+      "id": "q3",
+      "question": "CodeRAG Lab支持哪些推理引擎？",
+      "gold": {
+        "must_cite_sources": ["src/coderag/llm/provider.py", "src/coderag/llm/llamacpp_openai.py"],
+        "answer_must_contain": ["llama.cpp", "HF", "Transformers"]
+      },
+      "tags": ["llm", "engine"]
     },
     {
-        "question": "如何使用Docker启动CodeRAG Lab？",
-        "ground_truth": "可以使用docker compose up -d命令一键启动CodeRAG Lab，包括API服务、Qdrant向量库和llama.cpp推理服务。",
-        "relevant_docs": ["docker-compose.yml", "README.md"]
+      "id": "q4",
+      "question": "如何使用Docker启动CodeRAG Lab？",
+      "gold": {
+        "must_cite_sources": ["docker-compose.yml", "README.md"],
+        "answer_must_contain": ["docker", "compose", "up"]
+      },
+      "tags": ["deployment", "docker"]
     },
     {
-        "question": "CodeRAG Lab的分块策略是什么？",
-        "ground_truth": "CodeRAG Lab支持按文件长度分块和按函数分块两种策略。",
-        "relevant_docs": ["src/coderag/ingest/chunker.py"]
+      "id": "q5",
+      "question": "CodeRAG Lab的分块策略是什么？",
+      "gold": {
+        "must_cite_sources": ["src/coderag/ingest/chunker.py"],
+        "answer_must_contain": ["chunk", "分块"]
+      },
+      "tags": ["ingest", "chunker"]
+    },
+    {
+      "id": "q6",
+      "question": "FastAPI应用是在哪里创建的？",
+      "gold": {
+        "must_cite_sources": ["src/coderag/api/main.py"],
+        "answer_must_contain": ["FastAPI", "app"]
+      },
+      "tags": ["api", "main"]
+    },
+    {
+      "id": "q7",
+      "question": "项目的依赖管理使用什么工具？",
+      "gold": {
+        "must_cite_sources": ["pyproject.toml", "README.md"],
+        "answer_must_contain": ["poetry", "pyproject"]
+      },
+      "tags": ["dependency", "tool"]
+    },
+    {
+      "id": "q8",
+      "question": "向量存储支持哪些选项？",
+      "gold": {
+        "must_cite_sources": ["src/coderag/rag/qdrant_store.py", "src/coderag/rag/faiss_store.py"],
+        "answer_must_contain": ["Qdrant", "FAISS"]
+      },
+      "tags": ["vector", "storage"]
     }
-]
+  ]
+}

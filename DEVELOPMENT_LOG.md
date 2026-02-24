@@ -1,5 +1,86 @@
 # CodeRAG Lab 开发日志
 
+## 2026-02-24 - Week 4: 评测功能完善与回归测试框架
+
+### 今日完成的工作
+
+1. **完善评测数据集格式**
+   - 更新 data/eval/coderag_eval_v1.json
+   - 添加 dataset_name、repo_name、items 结构
+   - 每条数据包含 id、question、gold（must_cite_sources、answer_must_contain）、tags 字段
+
+2. **更新评测数据集加载器**
+   - 修改 src/coderag/eval/dataset.py
+   - 支持新的 JSON 格式（包含 items 数组）
+   - 添加 get_gold、get_must_cite_sources、get_answer_must_contain、get_tags 等方法
+   - 支持按标签筛选问题
+
+3. **完善评测指标计算**
+   - 修改 src/coderag/eval/metrics.py
+   - 添加 hit_rate_at_k：top-k 是否包含 gold source（检索能力）
+   - 添加 citation_rate：回答是否包含 [SOURCE n] 引用（引用约束）
+   - 添加 contains_rate：是否覆盖必需关键词（粗略正确性）
+   - 添加 compute_all_metrics：计算单个问题的所有指标
+   - 添加 aggregate_metrics：聚合多个问题的评测结果
+   - 添加 aggregate_by_tag：按标签聚合评测结果
+
+4. **实现完整 RAG 评测流程**
+   - 修改 src/coderag/eval/runner.py
+   - 实现 EvaluationRunner 类，支持完整 RAG 流程评测
+   - 支持 skip_llm 参数，仅测试检索（不调用 LLM）
+   - 支持 --skip-llm 命令行选项
+
+5. **实现回归测试框架**
+   - 添加 RegressionTestRunner 类
+   - 实现 compare_with_previous 方法，对比历史评测结果
+   - 自动检测性能回退（regression）
+   - 保存评测历史到 regression_history.json
+
+6. **更新 CLI 命令**
+   - 修改 src/coderag/cli.py
+   - eval 命令添加 --top-k 和 --skip-llm 选项
+   - 添加 regression 子命令，用于运行回归测试
+   - ingest-repo 作为 ingest 的别名
+
+### 遇到的问题与解决方案
+
+1. **评测数据集格式不匹配**
+   - 问题：原有数据集格式简单，缺乏 gold 标准定义
+   - 解决方案：按照 12 周计划要求，重新设计数据集格式
+
+2. **缺少引用检测**
+   - 问题：无法检测 LLM 生成的回答是否包含引用
+   - 解决方案：添加正则表达式匹配 [SOURCE n] 格式的引用
+
+3. **缺少回归测试机制**
+   - 问题：无法追踪系统改动后的性能变化
+   - 解决方案：实现 RegressionTestRunner，自动对比历史结果
+
+### 代码提交
+
+- **提交信息**：Week 4: 完善评测功能与回归测试框架
+- **提交内容**：更新评测数据集、指标计算、评测运行器、CLI命令等
+- **远程推送**：待执行
+
+### 测试结果
+
+- 10 个测试用例通过
+- 1 个测试失败（由于网络问题无法下载模型，非代码问题）
+
+### 下一步计划
+
+1. Week 5：优化检索与文档处理（rerank + chunking 优化）
+2. Week 6：集成 LoRA 微调与训练
+3. Week 7：前端展示与用户交互
+
+### 项目状态
+
+✅ **Week 4任务已完成**：评测功能完善，包括：
+- 完整的评测数据集格式
+- hit_rate@k、citation_rate、contains_rate 等核心指标
+- 回归测试框架
+- CLI 命令行支持
+
 ## 2026-02-24 - Week 3: RAG问答系统完整实现
 
 ### 今日完成的工作
