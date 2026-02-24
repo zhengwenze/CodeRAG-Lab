@@ -1,11 +1,12 @@
 from typing import List, Dict, Any
 from coderag.rag.qdrant_store import QdrantStore
 from coderag.rag.faiss_store import FaissStore
+from coderag.rag.bm25_rerank import HybridRetriever
 from coderag.settings import settings
 
 
 class Retriever:
-    """检索器"""
+    """检索器，支持向量检索 + BM25 重排"""
 
     def __init__(self):
         if settings.vector_store == "faiss":
@@ -13,6 +14,7 @@ class Retriever:
         else:
             self.store = QdrantStore()
         self.top_k = settings.top_k
+        self.hybrid_retriever = HybridRetriever(vector_weight=0.5, bm25_weight=0.5)
 
     def retrieve(self, query: str, embedding: List[float], top_k: int = None) -> List[Dict[str, Any]]:
         """检索相关文档"""
@@ -23,20 +25,37 @@ class Retriever:
         )
         return results
 
-    def hybrid_retrieve(self, query: str, embedding: List[float], top_k: int = None) -> List[Dict[str, Any]]:
-        """混合检索（向量+BM25）"""
-        # 暂时只实现向量检索
-        return self.retrieve(query, embedding, top_k)
+    def hybrid_retrieve(self, query: str, embedding: List[float], top_k: int = None, use_rerank: bool = True) -> List[Dict[str, Any]]:
+        """混合检索（向量检索 + BM25 重排）
+
+        Args:
+            query: 查询文本
+            embedding: 查询向量
+            top_k: 返回结果数量
+            use_rerank: 是否使用 BM25 重排
+        """
+        top_k = top_k or self.top_k
+
+        vector_results = self.store.search(
+            query_vector=embedding,
+            top_k=top_k * 2,
+        )
+
+        if not vector_results:
+            return []
+
+        if use_rerank:
+            return self.hybrid_retriever.rerank(query, vector_results, use_hybrid=True, top_k=top_k)
+
+        for i, doc in enumerate(vector_results):
+            doc['rank'] = i + 1
+
+        return vector_results[:top_k]
 
     def rerank(self, query: str, results: List[Dict[str, Any]], top_k: int = None) -> List[Dict[str, Any]]:
-        """重排检索结果"""
+        """使用 BM25 重排检索结果"""
         top_k = top_k or self.top_k
-        # 暂时只按分数排序
-        reranked = sorted(results, key=lambda x: x['score'], reverse=True)[:top_k]
-        # 更新排名
-        for i, item in enumerate(reranked):
-            item['rank'] = i + 1
-        return reranked
+        return self.hybrid_retriever.rerank(query, results, use_hybrid=True, top_k=top_k)
 
     def add_points(self, points: List[Dict[str, Any]]):
         """添加向量点"""
