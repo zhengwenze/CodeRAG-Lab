@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     temperature: float = 0.7
 
     # 分块配置
-    chunk_size: int = 1000
-    chunk_overlap: int = 100
+    chunk_size: int = 2000
+    chunk_overlap: int = 200
 
     # 日志配置
     log_level: str = "INFO"
