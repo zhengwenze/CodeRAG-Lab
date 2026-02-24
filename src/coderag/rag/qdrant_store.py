@@ -53,6 +53,8 @@ class QdrantStore:
                     'end_line': point.get('end_line'),
                     'content': point['content'],
                     'chunk_size': point.get('chunk_size'),
+                    'structure_type': point.get('structure_type'),
+                    'structure_name': point.get('structure_name'),
                 }
                 point_struct = PointStruct(
                     id=point_id,
