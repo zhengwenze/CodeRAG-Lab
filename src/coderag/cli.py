@@ -18,12 +18,10 @@ def ingest(repo_path):
     """入库代码库"""
     click.echo(f"Ingesting repository: {repo_path}")
 
-    # 加载代码库
     loader = RepoLoader(repo_path)
     files = loader.load()
     click.echo(f"Loaded {len(files)} files")
 
-    # 分块
     chunker = Chunker()
     all_chunks = []
     for file in files:
@@ -31,7 +29,6 @@ def ingest(repo_path):
         all_chunks.extend(chunks)
     click.echo(f"Created {len(all_chunks)} chunks")
 
-    # 生成嵌入
     llm = LLMProviderFactory.get_provider(settings.llm_provider)
     embedded_chunks = []
     for i, chunk in enumerate(all_chunks):
@@ -42,29 +39,58 @@ def ingest(repo_path):
         embedded_chunks.append(chunk)
     click.echo(f"Generated embeddings for {len(embedded_chunks)} chunks")
 
-    # 根据配置选择存储
     from coderag.rag.retriever import Retriever
     retriever = Retriever()
     retriever.add_points(embedded_chunks)
     click.echo(f"Ingestion completed successfully using {settings.vector_store}")
 
 
+@cli.command(name='ingest-repo')
+@click.argument('repo_path')
+def ingest_repo(repo_path):
+    """入库代码库（别名）"""
+    ingest(repo_path)
+
+
 @cli.command()
-@click.argument('dataset_path')
-def eval(dataset_path):
+@click.argument('dataset_path', required=False, default=None)
+@click.option('--top-k', type=int, default=None, help='Top-k for retrieval')
+@click.option('--skip-llm', is_flag=True, help='Skip LLM generation (only test retrieval)')
+def eval(dataset_path, top_k, skip_llm):
     """运行评测"""
-    click.echo(f"Running evaluation on dataset: {dataset_path}")
     from coderag.eval.runner import EvaluationRunner
-    runner = EvaluationRunner(dataset_path)
+    
+    runner = EvaluationRunner(
+        dataset_path=dataset_path,
+        top_k=top_k,
+        skip_llm=skip_llm
+    )
     results = runner.run_evaluation()
     click.echo("Evaluation completed successfully")
+
+
+@cli.command()
+@click.argument('dataset_path', required=False, default=None)
+@click.option('--baseline', type=str, default=None, help='Baseline result file to compare with')
+def regression(dataset_path, baseline):
+    """运行回归测试，对比历史结果"""
+    from coderag.eval.runner import RegressionTestRunner
+    
+    runner = RegressionTestRunner(dataset_path=dataset_path)
+    comparison = runner.run_regression_test(baseline_file=baseline)
+    
+    if comparison.get('regressions'):
+        click.echo(f"\n⚠️  Regressions detected: {len(comparison['regressions'])}")
+        for reg in comparison['regressions']:
+            click.echo(f"  - {reg}")
+    else:
+        click.echo("\n✅ No regressions detected")
 
 
 @cli.command()
 def init():
     """初始化项目"""
     click.echo("Initializing CodeRAG Lab")
-    # 创建必要的目录
     import os
     directories = [
         'data/eval',
