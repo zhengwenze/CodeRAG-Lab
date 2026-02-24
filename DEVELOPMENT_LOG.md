@@ -1,5 +1,96 @@
 # CodeRAG Lab 开发日志
 
+## 2026-02-24 - Week 2: FAISS本地向量存储和检索功能
+
+### 今日完成的工作
+
+1. **添加FAISS依赖**
+   - 在pyproject.toml中添加了faiss-cpu依赖
+   - 用于支持本地向量检索功能
+
+2. **实现FAISS向量存储类**
+   - 创建了src/coderag/rag/faiss_store.py文件
+   - 实现了FaissStore类，支持向量索引的创建、添加、检索和持久化
+   - 使用numpy数组进行向量处理
+   - 支持向量归一化，使用点积作为余弦相似度
+
+3. **修改配置管理**
+   - 在settings.py中添加了FAISS相关配置
+   - 添加了VECTOR_STORE配置项，支持选择faiss或qdrant
+   - 添加了FAISS_INDEX_PATH和FAISS_METADATA_PATH配置
+
+4. **更新检索器**
+   - 修改了retriever.py，支持根据配置选择FAISS或Qdrant存储
+   - 添加了add_points和clear_index方法，统一接口
+
+5. **实现/ask端点**
+   - 在main.py中实现了/ask端点
+   - 返回检索到的top-k片段（不进行LLM生成）
+   - 添加了AskRequest和AskResponse数据模型
+
+6. **更新CLI命令**
+   - 修改了ingest命令，根据配置选择使用FAISS或Qdrant进行入库
+
+7. **编写测试用例**
+   - 创建了tests/test_faiss.py文件
+   - 编写了5个测试用例，验证FAISS存储和检索功能
+   - 测试覆盖初始化、添加向量点、检索、清空索引和持久化
+
+8. **更新文档**
+   - 在README.md中添加了Week 2的功能说明
+   - 更新了配置部分，添加了FAISS相关配置
+   - 添加了/ask端点的API文档
+
+### 遇到的问题与解决方案
+
+1. **faiss模块导入错误**
+   - 问题：faiss-cpu未安装
+   - 解决方案：使用pip install -e .安装项目依赖
+
+2. **faiss.VectorFloat不存在**
+   - 问题：使用了不存在的faiss.VectorFloat属性
+   - 解决方案：使用numpy数组替代faiss.VectorFloat
+
+3. **chunker无限循环问题**
+   - 问题：当内容没有换行符且overlap >= chunk_size时会导致无限循环
+   - 解决方案：添加有效块大小和重叠大小的计算，确保不会退化为0或负数
+
+4. **main.py导入错误**
+   - 问题：AskRequest未导入
+   - 解决方案：在main.py中添加AskRequest和AskResponse的导入
+
+### 代码提交
+
+- **提交信息**：Week 2: 实现FAISS本地向量存储和/ask检索端点
+- **提交内容**：10个文件，504行新增代码
+- **远程推送**：成功推送到GitHub仓库main分支
+
+### 测试结果
+
+所有11个测试用例均通过：
+- test_health_check - 健康检查端点测试
+- test_chat_endpoint - 聊天端点测试
+- test_chat_endpoint_invalid_input - 无效输入测试
+- test_chunker_basic - 分块功能测试
+- test_settings_load - 配置加载测试
+- test_exception_handling - 异常处理测试
+- test_faiss_store_init - FAISS存储初始化测试
+- test_faiss_store_add_points - FAISS添加向量测试
+- test_faiss_store_search - FAISS检索测试
+- test_faiss_store_clear_index - FAISS清空索引测试
+- test_faiss_store_persistence - FAISS持久化测试
+
+### 下一步计划
+
+1. Week 3：开发前端Demo，提供更友好的用户界面
+2. Week 4：优化评测系统，增加更多评测指标
+3. Week 5：实现反馈闭环，支持用户反馈收集和分析
+4. Week 6：进行性能优化和系统调优
+
+### 项目状态
+
+✅ **Week 2任务已完成**：FAISS本地向量存储、/ask端点、CLI更新、测试用例等所有任务均已实现并通过测试。
+
 ## 2026-02-23 - Week 1: 项目初始化与基础功能实现
 
 ### 今日完成的工作
