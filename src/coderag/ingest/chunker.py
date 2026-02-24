@@ -12,18 +12,52 @@ class Chunker:
     def chunk_file(self, file_path: str, content: str) -> List[Dict[str, Any]]:
         """对文件内容进行分块"""
         chunks = []
+        
+        if not content:
+            return chunks
+        
+        effective_chunk_size = min(self.chunk_size, len(content))
+        effective_overlap = min(self.chunk_overlap, effective_chunk_size - 1) if effective_chunk_size > 1 else 0
+            
         lines = content.split('\n')
         total_lines = len(lines)
+        
+        if total_lines == 1:
+            if len(content) > self.chunk_size:
+                start = 0
+                while start < len(content):
+                    end = min(start + effective_chunk_size, len(content))
+                    chunk_content = content[start:end]
+                    chunk = {
+                        'file_path': file_path,
+                        'start_line': start + 1,
+                        'end_line': end,
+                        'content': chunk_content,
+                        'chunk_size': len(chunk_content),
+                    }
+                    chunks.append(chunk)
+                    start = end - effective_overlap
+                    if start <= chunks[-1]['start_line'] - 1:
+                        start = chunks[-1]['end_line']
+                    if start >= len(content):
+                        break
+            else:
+                chunk = {
+                    'file_path': file_path,
+                    'start_line': 1,
+                    'end_line': 1,
+                    'content': content,
+                    'chunk_size': len(content),
+                }
+                chunks.append(chunk)
+            return chunks
 
         start_line = 1
         while start_line <= total_lines:
-            # 计算当前块的结束行
-            end_line = min(start_line + self.chunk_size - 1, total_lines)
+            end_line = min(start_line + effective_chunk_size - 1, total_lines)
             
-            # 提取块内容
             chunk_content = '\n'.join(lines[start_line-1:end_line])
             
-            # 创建块
             chunk = {
                 'file_path': file_path,
                 'start_line': start_line,
@@ -33,8 +67,11 @@ class Chunker:
             }
             chunks.append(chunk)
             
-            # 计算下一个块的起始行（考虑重叠）
-            start_line = end_line - self.chunk_overlap + 1
+            start_line = end_line - effective_overlap + 1
+            if start_line <= chunks[-1]['start_line']:
+                start_line = chunks[-1]['end_line'] + 1
+            if start_line > total_lines:
+                break
 
         return chunks
 

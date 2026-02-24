@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
     qdrant_collection: str = "coderag"
+    
+    # FAISS配置
+    faiss_index_path: str = "data/faiss_index"
+    faiss_metadata_path: str = "data/faiss_metadata.pkl"
 
     # 嵌入模型配置
     embedding_model: str = "BAAI/bge-small-en-v1.5"
