@@ -27,17 +27,19 @@ docker compose up -d
 
 ### 2) 启动 llama.cpp（OpenAI 兼容）
 
-**建议先用小模型跑通链路：**
+**macOS/Linux:**
 
 ```bash
 llama-server -hf ggml-org/gemma-3-1b-it-GGUF --port 8080
 ```
 
-（后续换你本地 GGUF 模型）
+**Windows:**
 
-```bash
+```cmd
 llama-server -m D:\models\your-model-q4_k_m.gguf --port 8080
 ```
+
+> 💡 **建议**：先用小模型跑通链路，后续可换成本地 GGUF 模型
 
 验证：
 
@@ -94,10 +96,12 @@ poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 * ✅ **可溯源问答（Citations）**：回答必须引用检索到的代码/文档片段（文件路径 + 行号）
 * ✅ **检索可解释（Explainable Retrieval）**：返回 top-k 命中片段及相似度分数（调参依据）
 * ✅ **离线评测（Eval）**：输出 `hit_rate@k`、`citation_rate`、`contains_rate`，并保存评测结果文件
+* ✅ **回归测试框架**：自动对比历史评测结果，检测性能回退
 * ✅ **推理层可插拔（Provider Pattern）**：默认 llama.cpp（OpenAI 兼容），后续可替换其他推理引擎
 * ✅ **工程化骨架（Production-ready Skeleton）**：FastAPI + Docker(Qdrant) + Poetry + 测试/CI
 * ✅ **现代化前端界面**：Next.js 15+、TypeScript、Tailwind CSS、响应式设计
 * ✅ **完整的用户交互**：代码库管理、聊天界面、评测结果、模型微调
+* ✅ **LoRA 微调支持**：集成 LoRA/QLoRA 微调，支持基础模型与微调模型对比评测
 
 ---
 
