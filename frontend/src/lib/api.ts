@@ -62,6 +62,36 @@ export const api = {
     return fetchApi<{ status: string; version: string }>('/health');
   },
 
+  // 获取代码库列表
+  async getRepos() {
+    return fetchApi<Array<{ id: string; name: string; files_count: number; created_at: string }>>('/api/repos');
+  },
+
+  // 上传代码库
+  async uploadRepo(file: File, repoName: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('repo_name', repoName);
+    
+    const response = await fetch(`${API_BASE_URL}/api/repos/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    return response.json();
+  },
+
+  // 处理代码库
+  async processRepo(repoName: string) {
+    return fetchApi<{ message: string; chunks_count: number }>('/api/repos/process', {
+      method: 'POST',
+      body: JSON.stringify({ repo_name: repoName }),
+    });
+  },
+
   // RAG 问答
   async queryRAG(question: string, repoId?: string, topK = 5) {
     const response = await fetchApi<ChatResponse>('/chat', {
@@ -108,5 +138,23 @@ export const api = {
   // 获取指定评测结果
   async getEvalResult(filename: string) {
     return fetchApi<EvalResult>(`/eval/results/${filename}`);
+  },
+
+  // 获取训练状态
+  async getTrainStatus() {
+    return fetchApi<{ status: string; current_epoch: number; loss: number | null; progress_percent: number }>('/train/status');
+  },
+
+  // 开始训练
+  async startTrain(config: {
+    base_model: string;
+    lora_rank: number;
+    epochs: number;
+    dataset_path: string;
+  }) {
+    return fetchApi<{ task_id: string; status: string }>('/train/start', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
   },
 };
