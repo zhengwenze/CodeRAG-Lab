@@ -43,6 +43,15 @@ class Settings(BaseSettings):
     top_p: float = 0.95
     temperature: float = 0.7
 
+    # 检索增强配置
+    enable_llm_rerank: bool = False
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    enable_fulltext: bool = False
+    fulltext_index_dir: str = "data/whoosh_index"
+    min_similarity: float = 0.0
+    vector_weight: float = 0.5
+    fulltext_weight: float = 0.5
+
     # 分块配置
     chunk_size: int = 2000
     chunk_overlap: int = 200
