@@ -1,8 +1,8 @@
 # CodeRAG Lab Makefile
 
 # 环境变量
-PYTHON=python
-PIP=pip
+PYTHON=python3
+PIP=pip3
 SRC_DIR=src
 TEST_DIR=tests
 
