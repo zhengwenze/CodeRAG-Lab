@@ -20,6 +20,11 @@ dependencies = [
     "faiss-cpu",
     "sentence-transformers",
     "rank-bm25",
+    "transformers",
+    "peft",
+    "torch",
+    "datasets",
+    "accelerate",
 ] 
 
 [build-system]

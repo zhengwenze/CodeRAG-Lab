@@ -1,5 +1,77 @@
 # CodeRAG Lab 开发日志
 
+## 2026-02-25 - Week 6: 集成 LoRA 微调与训练
+
+### 今日完成的工作
+
+1. **添加LoRA微调相关依赖**
+   - 在pyproject.toml中添加transformers、peft、torch、datasets、accelerate等依赖
+   - 用于支持模型微调训练
+
+2. **实现LoRA微调功能**
+   - 创建src/coderag/llm/lora.py文件
+   - 实现LoRATrainer类，支持模型加载、LoRA配置、训练、合并和生成
+   - 实现LoRAProvider类，支持使用微调后的模型
+   - 支持从adapter配置中自动获取基础模型
+
+3. **创建数据处理模块**
+   - 创建src/coderag/data/目录
+   - 创建src/coderag/data/prepare_dataset.py文件
+   - 实现DatasetPreparer类，支持从评测数据集和代码库生成微调数据集
+   - 支持数据集合并和分割功能
+
+4. **更新CLI命令**
+   - 在cli.py中添加lora命令组
+   - 添加lora train命令，支持训练LoRA模型
+   - 添加lora prepare-dataset命令，支持准备微调数据集
+   - 添加lora merge命令，支持合并LoRA模型
+   - 添加lora generate命令，支持使用LoRA模型生成回答
+   - 添加lora split-dataset命令，支持分割数据集
+   - 添加lora merge-datasets命令，支持合并多个数据集
+   - 添加lora compare命令，支持对比评测微调与原始模型
+
+5. **实现对比评测功能**
+   - 创建src/coderag/eval/lora_comparison.py文件
+   - 实现LoRAComparisonRunner类，支持运行对比评测
+   - 同时评测原始模型和LoRA微调模型
+   - 计算并展示性能差异
+   - 支持按标签聚合评测结果
+
+### 遇到的问题与解决方案
+
+1. **中文变量名问题**
+   - 问题：在prepare_dataset.py中使用了中文变量名
+   - 解决方案：将所有中文变量名替换为英文，确保代码可读性和一致性
+
+2. **LoRA配置参数**
+   - 问题：需要合理设置LoRA的rank和alpha参数
+   - 解决方案：提供默认值（r=8, alpha=16），同时支持通过CLI参数自定义
+
+3. **模型加载路径**
+   - 问题：需要处理不同类型的模型路径（基础模型vs微调模型）
+   - 解决方案：在LoRAProvider中添加自动检测逻辑，支持从adapter_config.json获取基础模型
+
+### 代码提交
+
+- **提交信息**：Week 6: 集成LoRA微调与训练功能
+- **提交内容**：添加LoRA微调功能、数据处理模块、CLI命令和对比评测功能
+- **远程推送**：待执行
+
+### 测试结果
+
+- Python语法检查通过
+- 代码结构清晰，功能模块完整
+- 支持完整的LoRA微调工作流
+
+### 下一步计划
+
+1. Week 7：前端展示与用户交互
+2. Week 8：API优化与部署
+
+### 项目状态
+
+✅ **Week 6任务已完成**：LoRA微调功能完整实现，包括依赖添加、核心功能、数据处理、CLI命令和对比评测
+
 ## 2026-02-25 - Week 5: 优化检索与文档处理（rerank + chunking 优化）
 
 ### 今日完成的工作
