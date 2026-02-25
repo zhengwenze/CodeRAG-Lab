@@ -3,7 +3,7 @@
     <div class="chat-container">
       <div class="chat-messages" ref="messagesRef">
         <div v-if="messages.length === 0" class="empty-state">
-          <img src="@/assets/logo.png" alt="CodeRAG" />
+          <img src="/logo.svg" alt="CodeRAG" />
           <h2>CodeRAG Lab</h2>
           <p>可溯源代码库助手 - 开始您的智能问答之旅</p>
         </div>
@@ -14,7 +14,7 @@
             :class="['message', msg.role]"
           >
             <div class="message-avatar">
-              <img v-if="msg.role === 'assistant'" src="@/assets/logo.png" alt="AI" />
+              <img v-if="msg.role === 'assistant'" src="/logo.svg" alt="AI" />
               <div v-else class="user-avatar">U</div>
             </div>
             <div class="message-content">

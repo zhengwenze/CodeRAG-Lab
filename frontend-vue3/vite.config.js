@@ -8,10 +8,11 @@ export default ({ mode }) => {
   return defineConfig({
     plugins: [vue()],
     server: {
+      host: '0.0.0.0',
       port: 5173,
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL || 'http://localhost:8000',
+          target: 'http://127.0.0.1:8000',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
@@ -25,7 +26,8 @@ export default ({ mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "@/styles/variables.scss";`,
+          additionalData: `@use "@/styles/variables.scss" as *;`,
+          api: 'modern-compiler',
         },
       },
     },
