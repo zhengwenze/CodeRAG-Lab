@@ -3,6 +3,7 @@ from .bm25_rerank import BM25Reranker, HybridRetriever
 from .reranker import LLMReranker, get_llm_reranker, RerankConfig
 from .fulltext_search import FullTextSearcher, create_searcher
 from .hybrid_search import HybridSearcher, create_hybrid_searcher
+from .pgvector_store import PgVectorStore
 
 __all__ = [
     "Retriever",
@@ -15,4 +16,5 @@ __all__ = [
     "create_searcher",
     "HybridSearcher",
     "create_hybrid_searcher",
+    "PgVectorStore",
 ]

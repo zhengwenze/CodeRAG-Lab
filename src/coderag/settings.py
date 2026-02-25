@@ -1,5 +1,19 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Dict, Any
+
+
+class EmbeddingModelConfig(BaseSettings):
+    """嵌入模型配置"""
+    model_name: str = "BAAI/bge-small-en-v1.5"
+    model_type: str = "local"
+    dimension: int = 384
+    device: str = "cpu"
+    normalize_embeddings: bool = True
+    batch_size: int = 32
+    max_seq_length: int = 512
+    base_url: Optional[str] = None
+    api_key: Optional[str] = None
+    model_path: Optional[str] = None
 
 
 class Settings(BaseSettings):
@@ -13,7 +27,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
 
     # 向量库配置
-    vector_store: str = "qdrant"  # faiss 或 qdrant
+    vector_store: str = "qdrant"
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
     qdrant_collection: str = "coderag"
@@ -22,12 +36,64 @@ class Settings(BaseSettings):
     faiss_index_path: str = "data/faiss_index"
     faiss_metadata_path: str = "data/faiss_metadata.pkl"
 
+    # PostgreSQL + pgvector 配置
+    pgvector_enabled: bool = False
+    pgvector_connection_string: str = "postgresql://user:password@localhost:5432/coderag"
+
     # 嵌入模型配置
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = 384
+    embedding_device: str = "cpu"
+
+    embedding_models: Dict[str, Dict[str, Any]] = {
+        "bge-small": {
+            "type": "local",
+            "model": "BAAI/bge-small-en-v1.5",
+            "dimension": 384,
+            "device": "cpu",
+            "description": "BAAI bge-small-en-v1.5 本地模型",
+        },
+        "bge-base": {
+            "type": "local",
+            "model": "BAAI/bge-base-en-v1.5",
+            "dimension": 768,
+            "device": "cpu",
+            "description": "BAAI bge-base-en-v1.5 本地模型",
+        },
+        "bge-large": {
+            "type": "local",
+            "model": "BAAI/bge-large-en-v1.5",
+            "dimension": 1024,
+            "device": "cpu",
+            "description": "BAAI bge-large-en-v1.5 本地模型",
+        },
+        "zhipu": {
+            "type": "api",
+            "model": "embedding-3",
+            "base_url": "https://open.bigmodel.cn/api/paas/v4",
+            "api_key": "",
+            "dimension": 1024,
+            "description": "智谱AI embedding-3 API",
+        },
+        "openai": {
+            "type": "api",
+            "model": "text-embedding-ada-002",
+            "base_url": "https://api.openai.com/v1",
+            "api_key": "",
+            "dimension": 1536,
+            "description": "OpenAI Ada embedding API",
+        },
+        "ollama": {
+            "type": "ollama",
+            "model": "nomic-embed-text",
+            "base_url": "http://localhost:11434",
+            "dimension": 768,
+            "description": "Ollama 本地 embedding 模型",
+        },
+    }
 
     # LLM配置
-    llm_provider: str = "llamacpp"  # llamacpp 或 hf
+    llm_provider: str = "llamacpp"
 
     # llama.cpp配置
     llamacpp_host: str = "localhost"
@@ -66,6 +132,29 @@ class Settings(BaseSettings):
 
     # 数据目录
     data_dir: str = "data"
+
+    def get_embedding_config(self, model_name: str = None) -> EmbeddingModelConfig:
+        """获取指定嵌入模型的配置"""
+        model_name = model_name or self.embedding_model
+        
+        if model_name in self.embedding_models:
+            config = self.embedding_models[model_name]
+            return EmbeddingModelConfig(
+                model_name=config.get("model", model_name),
+                model_type=config.get("type", "local"),
+                dimension=config.get("dimension", self.embedding_dim),
+                device=config.get("device", self.embedding_device),
+                base_url=config.get("base_url"),
+                api_key=config.get("api_key"),
+                model_path=config.get("model_path"),
+            )
+        
+        return EmbeddingModelConfig(
+            model_name=model_name,
+            model_type="local",
+            dimension=self.embedding_dim,
+            device=self.embedding_device,
+        )
 
     class Config:
         env_file = ".env"
