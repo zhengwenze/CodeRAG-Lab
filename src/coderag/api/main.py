@@ -80,6 +80,17 @@ async def health_check(request: Request):
     )
 
 
+@app.get("/config")
+async def get_config():
+    """获取配置"""
+    return {
+        "embedding_model": settings.embedding_model,
+        "embedding_dim": settings.embedding_dim,
+        "llm_provider": settings.llm_provider,
+        "vector_store": settings.vector_store,
+    }
+
+
 @app.post("/chat")
 async def chat(request: Request, chat_request: ChatRequest):
     """聊天端点，实现RAG问答"""
@@ -279,6 +290,163 @@ async def get_evaluation_result(filename: str):
         data = json.load(f)
     
     return data
+
+
+@app.get("/datasets")
+async def list_datasets():
+    """获取知识库列表"""
+    from pathlib import Path
+    data_dir = Path(settings.data_dir)
+    datasets_dir = data_dir / "datasets"
+    
+    if not datasets_dir.exists():
+        return {"data": []}
+    
+    datasets = []
+    for ds in datasets_dir.iterdir():
+        if ds.is_dir():
+            doc_count = len(list(ds.glob("*.txt"))) + len(list(ds.glob("*.md")))
+            datasets.append({
+                "id": ds.name,
+                "name": ds.name,
+                "description": f"知识库 {ds.name}",
+                "document_count": doc_count,
+                "chunk_count": doc_count * 10,
+                "created_at": datetime.utcnow().isoformat(),
+            })
+    
+    return {"data": datasets}
+
+
+@app.post("/datasets")
+async def create_dataset(request: Request):
+    """创建知识库"""
+    from pathlib import Path
+    import json
+    
+    data_dir = Path(settings.data_dir)
+    datasets_dir = data_dir / "datasets"
+    datasets_dir.mkdir(parents=True, exist_ok=True)
+    
+    body = await request.json()
+    name = body.get("name", "unnamed")
+    
+    ds_path = datasets_dir / name
+    ds_path.mkdir(parents=True, exist_ok=True)
+    
+    return {
+        "id": name,
+        "name": name,
+        "description": body.get("description", ""),
+        "created_at": datetime.utcnow().isoformat(),
+    }
+
+
+@app.get("/datasets/{dataset_id}")
+async def get_dataset(dataset_id: str):
+    """获取知识库详情"""
+    from pathlib import Path
+    
+    data_dir = Path(settings.data_dir)
+    ds_path = data_dir / "datasets" / dataset_id
+    
+    if not ds_path.exists():
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    
+    return {
+        "id": dataset_id,
+        "name": dataset_id,
+        "description": f"知识库 {dataset_id}",
+    }
+
+
+@app.delete("/datasets/{dataset_id}")
+async def delete_dataset(dataset_id: str):
+    """删除知识库"""
+    from pathlib import Path
+    import shutil
+    
+    data_dir = Path(settings.data_dir)
+    ds_path = data_dir / "datasets" / dataset_id
+    
+    if ds_path.exists():
+        shutil.rmtree(ds_path)
+    
+    return {"message": "Dataset deleted"}
+
+
+@app.post("/datasets/{dataset_id}/documents")
+async def upload_document(dataset_id: str, request: Request):
+    """上传文档"""
+    from pathlib import Path
+    import shutil
+    
+    data_dir = Path(settings.data_dir)
+    ds_path = data_dir / "datasets" / dataset_id
+    ds_path.mkdir(parents=True, exist_ok=True)
+    
+    form = await request.form()
+    file = form.get("file")
+    
+    if not file:
+        raise HTTPException(status_code=400, detail="No file provided")
+    
+    file_path = ds_path / file.filename
+    with open(file_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    
+    return {
+        "id": file.filename,
+        "filename": file.filename,
+        "status": "completed",
+        "size": file_path.stat().st_size,
+        "created_at": datetime.utcnow().isoformat(),
+    }
+
+
+@app.get("/datasets/{dataset_id}/documents")
+async def list_documents(dataset_id: str):
+    """获取文档列表"""
+    from pathlib import Path
+    
+    data_dir = Path(settings.data_dir)
+    ds_path = data_dir / "datasets" / dataset_id
+    
+    if not ds_path.exists():
+        return {"data": []}
+    
+    documents = []
+    for f in ds_path.iterdir():
+        if f.is_file():
+            documents.append({
+                "id": f.name,
+                "filename": f.name,
+                "status": "completed",
+                "size": f.stat().st_size,
+                "created_at": datetime.fromtimestamp(f.stat().st_ctime).isoformat(),
+            })
+    
+    return {"data": documents}
+
+
+@app.delete("/datasets/{dataset_id}/documents/{document_id}")
+async def delete_document(dataset_id: str, document_id: str):
+    """删除文档"""
+    from pathlib import Path
+    
+    data_dir = Path(settings.data_dir)
+    file_path = data_dir / "datasets" / dataset_id / document_id
+    
+    if file_path.exists():
+        file_path.unlink()
+    
+    return {"message": "Document deleted"}
+
+
+@app.get("/datasets/{dataset_id}/documents/{document_id}/chunks")
+async def get_chunks(dataset_id: str, document_id: str):
+    """获取文档切片"""
+    return {"data": []}
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function chat(data) {
   return request({
-    url: '/api/chat',
+    url: '/chat',
     method: 'post',
     data,
   })
@@ -10,7 +10,7 @@ export function chat(data) {
 
 export function chatStream(data) {
   return request({
-    url: '/api/chat',
+    url: '/chat',
     method: 'post',
     data: { ...data, stream: true },
     responseType: 'stream',
@@ -19,7 +19,7 @@ export function chatStream(data) {
 
 export function ask(query, top_k = 5) {
   return request({
-    url: '/api/ask',
+    url: '/ask',
     method: 'post',
     data: { query, top_k },
   })
@@ -27,14 +27,14 @@ export function ask(query, top_k = 5) {
 
 export function healthCheck() {
   return request({
-    url: '/api/health',
+    url: '/health',
     method: 'get',
   })
 }
 
 export function getConfig() {
   return request({
-    url: '/api/config',
+    url: '/config',
     method: 'get',
   })
 }
