@@ -40,6 +40,7 @@ services:
     volumes:
       - ./models:/models
     command: --host 0.0.0.0 --port 8080 --model /models/model.gguf --n-gpu-layers 0
+    restart: unless-stopped
 
   # 后端 API 服务
   api:
@@ -62,7 +63,7 @@ services:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - QDRANT_COLLECTION=coderag
-      - PGVECTOR_ENABLED=true
+      - PGVECTOR_ENABLED=false
       - PGVECTOR_CONNECTION_STRING=postgresql://coderag:coderag123@postgres:5432/coderag
       - EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
       - EMBEDDING_DIM=384
@@ -79,13 +80,11 @@ services:
       - LOG_LEVEL=INFO
       - DATA_DIR=/app/data
     depends_on:
-      postgres:
-        condition: service_healthy
       qdrant:
         condition: service_started
     restart: unless-stopped
 
-  # 前端 Web UI
+  # 前端 Web UI (Next.js)
   frontend:
     build:
       context: ./frontend
@@ -95,6 +94,18 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # 前端 Web UI (Vue3 - 可选)
+  frontend-vue3:
+    build:
+      context: ./frontend-vue3
+      dockerfile: Dockerfile
+    container_name: coderag-frontend-vue3
+    ports:
+      - "5173:80"
     depends_on:
       - api
     restart: unless-stopped
