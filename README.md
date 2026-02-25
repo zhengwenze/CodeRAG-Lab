@@ -1,10 +1,9 @@
-
 ---
 
 # CodeRAG Lab（Win10）— 可溯源代码库助手（RAG + 评测 + llama.cpp 部署）
 
 > 把任意开源/本地代码仓库（repo）变成一个 **"能检索、能引用、能评测、可服务化"** 的 RAG 问答系统。  
-> **简历定位**：可溯源 RAG（Citations） + 评测体系（Eval/Regression） + 工程化服务（API/Deploy/CI）。
+> **简历定位**：可溯源 RAG（Citations） + 评测体系（Eval/Regression） + 工程化服务（API/Deploy/CI） + 现代化前端界面。
 
 ---
 
@@ -15,10 +14,12 @@
 - Poetry
 - Docker Desktop（用于 Qdrant）
 - llama.cpp 的 `llama-server.exe`（OpenAI Compatible API）
+- Node.js 18+（用于前端）
+- npm 或 yarn（用于前端依赖管理）
 - （可选）Git Bash（方便运行 make；没有 make 也可手动执行命令）
 
 ### 1) 启动 Qdrant
-```docker compose up -d
+```bash
 docker compose up -d
 ```
 
@@ -42,7 +43,7 @@ llama-server -m D:\models\your-model-q4_k_m.gguf --port 8080
 curl http://127.0.0.1:8080/v1/models
 ```
 
-### 3) 安装依赖 + 启动 API
+### 3) 安装后端依赖 + 启动 API
 
 ```bash
 copy .env.example .env
@@ -56,31 +57,45 @@ poetry run uvicorn coderag.api.main:app --host 127.0.0.1 --port 8000 --reload
 curl http://127.0.0.1:8000/health
 ```
 
-### 4) 入库一个 repo
+### 4) 安装前端依赖 + 启动前端
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+前端访问地址：http://localhost:9000
+
+### 5) 入库一个 repo
+
+**方法一：使用前端界面**
+- 访问 http://localhost:9000/dashboard
+- 填写代码库名称
+- 选择代码库文件
+- 点击"入库"按钮
+
+**方法二：使用命令行**
 
 ```bash
 poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 ```
 
-### 5) 发起问答
+### 6) 开始使用
 
-PowerShell（注意引号转义）：
-
-```powershell
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/chat" `
-  -ContentType "application/json" `
-  -Body '{"messages":[{"role":"user","content":"Where is the FastAPI app created?"}],"top_k":6,"include_hits":true}'
-```
+访问 http://localhost:9000/chat，选择代码库并开始提问。
 
 ---
 
 ## 1. 你将得到什么（功能与卖点）
 
-* ✅ **可溯源问答（Citations）**：回答必须引用检索到的代码/文档片段（文件路径 + chunk）
+* ✅ **可溯源问答（Citations）**：回答必须引用检索到的代码/文档片段（文件路径 + 行号）
 * ✅ **检索可解释（Explainable Retrieval）**：返回 top-k 命中片段及相似度分数（调参依据）
 * ✅ **离线评测（Eval）**：输出 `hit_rate@k`、`citation_rate`、`contains_rate`，并保存评测结果文件
 * ✅ **推理层可插拔（Provider Pattern）**：默认 llama.cpp（OpenAI 兼容），后续可替换其他推理引擎
 * ✅ **工程化骨架（Production-ready Skeleton）**：FastAPI + Docker(Qdrant) + Poetry + 测试/CI
+* ✅ **现代化前端界面**：Next.js 15+、TypeScript、Tailwind CSS、响应式设计
+* ✅ **完整的用户交互**：代码库管理、聊天界面、评测结果、模型微调
 
 ---
 
@@ -88,8 +103,9 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/chat" `
 
 ```
       +------------------+
-      |  Web/Client/curl |
-      +--------+---------
+      |    前端界面      |
+      |  http://localhost:9000 |
+      +--------+--------+
                |
                v
         +------+-------+             +----------------------+
@@ -99,13 +115,14 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/chat" `
                |
         retrieve v
         +------+-------+
-        |    Qdrant    |
-        | Vector Search|
+        | 向量存储      |
+        | Qdrant/FAISS |
         +--------------+
 ```
 
-* **Qdrant**：向量检索（top-k）
+* **前端**：Next.js 15+、TypeScript、Tailwind CSS，提供直观的用户界面
 * **FastAPI**：RAG 编排（检索→拼 prompt→调用 LLM→返回引用）
+* **向量存储**：支持 Qdrant（分布式）和 FAISS（本地）
 * **llama.cpp**：离线推理（Win10 资源友好，demo 稳）
 
 ---
@@ -126,6 +143,18 @@ coderag-lab/
     runs/                # 评测输出（自动生成）
     qdrant_storage/      # qdrant 数据卷（自动生成）
 
+  frontend/              # 前端项目
+    src/
+      app/              # Next.js App Router
+        dashboard/       # 代码库管理页
+        chat/            # RAG 问答页
+        eval/            # 评测结果页
+        train/           # 模型微调页
+      components/        # UI 组件
+      lib/              # 工具函数和 API 封装
+      types/            # TypeScript 类型定义
+      store/            # Zustand 状态管理
+
   src/
     coderag/
       settings.py
@@ -140,6 +169,7 @@ coderag-lab/
 
       rag/
         qdrant_store.py
+        faiss_store.py
         retriever.py
         prompt.py
 
@@ -163,47 +193,93 @@ coderag-lab/
 复制 `.env.example` 为 `.env`，并按需修改：
 
 ```env
-# ---- LLM Provider ----
-LLM_PROVIDER=llamacpp_openai
-LLM_BASE_URL=http://127.0.0.1:8080/v1
-LLM_API_KEY=none
-LLM_MODEL=local-gguf
+# 基础配置
+PROJECT_NAME=CodeRAG Lab
+ENVIRONMENT=development
+DEBUG=True
 
-# ---- Vector DB ----
-VECTOR_STORE=faiss  # faiss 或 qdrant
-QDRANT_URL=http://127.0.0.1:6333
-QDRANT_COLLECTION=coderag_chunks
+# API配置
+API_HOST=0.0.0.0
+API_PORT=8000
 
-# ---- FAISS Config ----
+# 向量库配置
+VECTOR_STORE=qdrant  # faiss 或 qdrant
+QDRANT_HOST=localhost
+QDRANT_PORT=6333
+QDRANT_COLLECTION=coderag
+
+# FAISS 配置
 FAISS_INDEX_PATH=data/faiss_index
 FAISS_METADATA_PATH=data/faiss_metadata.pkl
 
-# ---- Embedding / Chunking ----
-EMBED_MODEL=sentence-transformers/all-MiniLM-L6-v2
-CHUNK_SIZE=900
-CHUNK_OVERLAP=120
+# 嵌入模型配置
+EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+EMBEDDING_DIM=384
 
-# ---- Retrieval ----
-TOP_K=6
+# LLM配置
+LLM_PROVIDER=llamacpp
 
-# ---- Server ----
-APP_HOST=127.0.0.1
-APP_PORT=8000
+# llama.cpp配置
+LLAMACPP_HOST=localhost
+LLAMACPP_PORT=8080
+LLAMACPP_MODEL_PATH=./models/model.gguf
+
+# 检索配置
+TOP_K=5
+TOP_P=0.95
+TEMPERATURE=0.7
+
+# 分块配置
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=100
+
+# 日志配置
+LOG_LEVEL=INFO
+LOG_FILE=logs/coderag.log
+
+# 评测配置
+EVAL_DATASET_PATH=data/eval/coderag_eval_v1.json
+EVAL_OUTPUT_PATH=data/runs/
+
+# 数据目录
+DATA_DIR=data
 ```
-
-### 4.1 Week 2 新增配置
-
-- `VECTOR_STORE`：向量存储选择，支持 `faiss`（本地）或 `qdrant`
-- `FAISS_INDEX_PATH`：FAISS 索引文件路径
-- `FAISS_METADATA_PATH`：FAISS 元数据文件路径
 
 > ⚠️ 如果你改 embedding 模型，向量维度可能变化，需要同步调整 Qdrant collection 的向量维度（初期建议先别换 embedding）。
 
 ---
 
-## 5. API 接口说明
+## 5. 前端使用指南
 
-### 5.1 `GET /health`
+### 5.1 代码库管理（/dashboard）
+
+- **上传代码库**：填写代码库名称，选择代码库文件，点击"入库"按钮
+- **查看代码库列表**：显示已入库的代码库，包括文件数量和创建时间
+- **任务状态**：实时显示上传和处理状态
+
+### 5.2 RAG 问答（/chat）
+
+- **选择代码库**：从下拉菜单中选择要查询的代码库
+- **输入问题**：在输入框中输入你的问题
+- **查看回答**：AI 会生成带有引用的回答
+- **查看引用**：点击引用卡片查看完整代码片段
+
+### 5.3 评测结果（/eval）
+
+- **运行评测**：输入测试集路径，点击"运行评测"按钮
+- **查看评测历史**：显示历史评测结果，包括精确率、召回率、F1分数
+
+### 5.4 模型微调（/train）
+
+- **配置微调参数**：选择基础模型、设置 LoRA Rank 和训练轮数
+- **开始训练**：点击"开始训练"按钮启动训练任务
+- **查看训练状态**：实时显示训练进度、Loss 值和当前轮数
+
+---
+
+## 6. API 接口说明
+
+### 6.1 `GET /health`
 
 返回：
 
@@ -211,13 +287,13 @@ APP_PORT=8000
 { "status": "ok" }
 ```
 
-### 5.2 `POST /ingest/repo`
+### 6.2 `POST /ingest/repo`
 
 请求：
 
 ```json
 {
-  "repo_path": "D:\\path\\to\\repo",
+  "repo_path": "D:\path\to\repo",
   "glob": "**/*"
 }
 ```
@@ -228,11 +304,11 @@ APP_PORT=8000
 {
   "files": 123,
   "chunks": 456,
-  "collection": "coderag_chunks"
+  "collection": "coderag"
 }
 ```
 
-### 5.3 `POST /chat`
+### 6.3 `POST /chat`
 
 请求：
 
@@ -256,7 +332,7 @@ APP_PORT=8000
 }
 ```
 
-### 5.4 `POST /ask` (Week 2 新增)
+### 6.4 `POST /ask`
 
 **功能**：返回检索到的 top-k 片段（不进行 LLM 生成）
 
@@ -292,9 +368,30 @@ APP_PORT=8000
 }
 ```
 
+### 6.5 前端 API 接口
+
+前端通过以下接口与后端通信：
+
+- `GET /api/repos`：获取代码库列表
+- `POST /api/repos/upload`：上传代码库文件
+- `POST /api/repos/process`：处理代码库
+- `POST /api/query`：RAG 问答查询
+- `POST /api/eval/run`：运行评测
+- `GET /api/eval/results`：获取评测结果
+- `POST /api/train/start`：开始模型微调
+- `GET /api/train/status`：获取训练状态
+
 ---
 
-## 6. 入库（Ingest Repo）
+## 7. 入库（Ingest Repo）
+
+### 7.1 使用前端界面
+- 访问 http://localhost:9000/dashboard
+- 填写代码库名称
+- 选择代码库文件
+- 点击"入库"按钮
+
+### 7.2 使用命令行
 
 ```bash
 poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
@@ -306,11 +403,11 @@ poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 
 ---
 
-## 7. 评测（Eval）
+## 8. 评测（Eval）
 
 > **评测是"玩具 vs 生产"的分水岭**：你最终要能回答——"效果好不好？改动后变好了还是变差了？"
 
-### 7.1 评测数据格式
+### 8.1 评测数据格式
 
 文件：`data/eval/coderag_eval_v1.json`
 
@@ -338,7 +435,14 @@ poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 * `answer_must_contain`：回答必须包含的关键词（规则评测）
 * `tags`：便于分组统计（后续可做 per-tag 指标）
 
-### 7.2 运行评测
+### 8.2 运行评测
+
+**方法一：使用前端界面**
+- 访问 http://localhost:9000/eval
+- 填写测试集路径
+- 点击"运行评测"按钮
+
+**方法二：使用命令行**
 
 ```bash
 poetry run python -m coderag.cli eval --dataset "data/eval/coderag_eval_v1.json"
@@ -357,33 +461,52 @@ poetry run python -m coderag.cli eval --dataset "data/eval/coderag_eval_v1.json"
 
 ---
 
-## 8. Makefile（可选）
+## 9. 模型微调（Training）
+
+### 9.1 使用前端界面
+- 访问 http://localhost:9000/train
+- 选择基础模型
+- 设置 LoRA Rank 和训练轮数
+- 点击"开始训练"按钮
+- 查看训练状态和进度
+
+### 9.2 配置说明
+
+- **Base Model**：选择要微调的基础模型
+- **LoRA Rank**：LoRA 微调的秩，一般为 8-64
+- **Epochs**：训练轮数，一般为 3-10
+
+---
+
+## 10. Makefile（可选）
 
 > Win10 没有 make 的话可忽略，直接手动执行命令即可。
 
 常用：
 
-* `make qdrant-up`
-* `make run`
-* `make ingest REPO=...`
-* `make eval DATA=...`
-* `make test`
+* `make qdrant-up`：启动 Qdrant
+* `make run`：启动后端服务
+* `make ingest REPO=...`：入库代码库
+* `make eval DATA=...`：运行评测
+* `make test`：运行测试
 
 ---
 
-## 9. 工程化亮点（写简历时怎么量化）
+## 11. 工程化亮点（写简历时怎么量化）
 
 你可以把这些写成"可验证成果"：
 
 * **可溯源回答**：回答引用 `[SOURCE n]`，并返回引用片段与来源路径
 * **离线评测**：自建评测集 N 条；`hit_rate@k` / `citation_rate` 等指标可复现
-* **回归能力**：每次改 chunking / prompt / 检索参数都能对比指标（建议 Week 6 起做）
+* **回归能力**：每次改 chunking / prompt / 检索参数都能对比指标
 * **一键启动**：Docker 启动 Qdrant；API 一条命令启动；llama.cpp 服务对接
 * **测试与 CI**：pytest + GitHub Actions（确保改动不破坏关键路径）
+* **现代化前端**：使用 Next.js 15+、TypeScript、Tailwind CSS 构建完整界面
+* **全栈开发**：后端 FastAPI + 前端 Next.js，完整的前后端对接
 
 ---
 
-## 10. 常见问题（Win10）
+## 12. 常见问题（Win10）
 
 ### Q1：Qdrant 启动失败
 
@@ -407,14 +530,26 @@ docker compose logs -f
 * `.env` 是否存在且字段正确
 * 端口 `8000` 是否占用
 
-### Q4：embedding 维度不匹配
+### Q4：前端启动失败
 
-* 初期建议先用 `all-MiniLM-L6-v2`（维度常见为 384）
+* 确认 Node.js 版本 >= 18
+* 确认前端依赖已安装：`npm install`
+* 检查端口 `9000` 是否占用
+
+### Q5：embedding 维度不匹配
+
+* 初期建议先用 `all-MiniLM-L6-v2` 或 `BAAI/bge-small-en-v1.5`（维度为 384）
 * 换 embedding 后，需要同步调整 Qdrant collection 的向量维度，并重建 collection
+
+### Q6：代码库入库失败
+
+* 检查代码库路径是否正确
+* 检查代码库文件是否过大
+* 检查文件权限是否正常
 
 ---
 
-## 11. Roadmap（后续迭代建议：做法 + 验收标准）
+## 13. Roadmap（后续迭代建议：做法 + 验收标准）
 
 1. **引用升级到行号**
 
@@ -425,9 +560,10 @@ docker compose logs -f
 
    * 验收：评测集 `hit_rate@k` 或正确率有可量化提升（例如 +5%）
 
-3. **前端 Demo（Streamlit/React）**
+3. **前端功能增强**
 
-   * 验收：左侧对话、右侧引用与 top-k 命中可视化
+   * 做法：添加更多交互功能，如代码库管理、模型管理等
+   * 验收：前端界面功能完整，用户体验良好
 
 4. **反馈闭环**
 
@@ -441,18 +577,10 @@ docker compose logs -f
 
 ---
 
-## 12. License
+## 14. License
 
 MIT
 
 ```
 
----
-
-### 你现在的 README 里我建议你立刻改的 3 个点（最关键）
-1) **统一命令**：你的 `ingest` 改成 `ingest-repo`（避免用户照 README 跑不起来）。  
-2) **统一 env 命名**：保留 `LLM_BASE_URL/LLM_MODEL/QDRANT_URL/...` 这一套即可；你那套 `LLAMACPP_HOST/PORT/MODEL_PATH` 会和 OpenAI 兼容调用方式冲突、也更难维护。  
-3) **Quickstart 前置**：招聘/面试的人只看 30 秒，Quickstart 放最上面提升转化率。
-
-如果你把你仓库的 **实际 CLI 命令/文件名**（比如 `coderag.cli ingest` 还是 `ingest-repo`）确认一下，我还能再做一次"完全对齐代码实现"的最终版，保证 README 命令 100% 可跑。
 ```
