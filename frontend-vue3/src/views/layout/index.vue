@@ -2,7 +2,7 @@
   <div class="layout-container">
     <div class="sidebar">
       <div class="logo">
-        <img src="@/assets/logo.png" alt="CodeRAG" />
+        <img src="/logo.svg" alt="CodeRAG" />
         <span>CodeRAG Lab</span>
       </div>
       <el-menu
