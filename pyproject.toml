@@ -26,6 +26,11 @@ dependencies = [
     "datasets",
     "accelerate",
     "whoosh",
+    "pypdf",
+    "python-docx",
+    "psycopg2-binary",
+    "pgvector",
+    "zhipuai",
 ] 
 
 [build-system]

@@ -1,34 +1,161 @@
+from typing import List, Optional, Dict, Any
 from sentence_transformers import SentenceTransformer
-from typing import List
-from coderag.settings import settings
+from coderag.settings import settings, EmbeddingModelConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class EmbeddingProvider:
-    """嵌入向量提供者"""
+    """嵌入向量提供者，支持多种模型"""
 
-    def __init__(self, model_name: str = None):
+    def __init__(self, model_name: str = None, config: EmbeddingModelConfig = None):
         self.model_name = model_name or settings.embedding_model
+        self.config = config or settings.get_embedding_config(self.model_name)
         self.model = None
 
-    def _get_model(self):
-        """延迟加载模型"""
+    def _get_local_model(self):
+        """加载本地 Sentence Transformers 模型"""
         if self.model is None:
-            self.model = SentenceTransformer(self.model_name)
+            self.model = SentenceTransformer(self.model_name, device=self.config.device)
         return self.model
+
+    def _get_api_model(self):
+        """获取 API 嵌入模型"""
+        if self.config.model_type == "zhipu":
+            return self._get_zhipu_model()
+        elif self.config.model_type == "openai":
+            return self._get_openai_model()
+        elif self.config.model_type == "ollama":
+            return self._get_ollama_model()
+        else:
+            raise ValueError(f"不支持的 API 模型类型: {self.config.model_type}")
+
+    def _get_zhipu_model(self):
+        """智谱AI嵌入模型"""
+        try:
+            from zhipuai import ZhipuAI
+            client = ZhipuAI(api_key=self.config.api_key)
+            return ZhipuEmbeddingClient(client, self.config.model_name)
+        except ImportError:
+            raise ImportError("请安装智谱AI SDK: pip install zhipuai")
+
+    def _get_openai_model(self):
+        """OpenAI 兼容嵌入模型"""
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=self.config.api_key, base_url=self.config.base_url)
+            return OpenAIEmbeddingClient(client, self.config.model_name)
+        except ImportError:
+            raise ImportError("请安装 OpenAI SDK: pip install openai")
+
+    def _get_ollama_model(self):
+        """Ollama 嵌入模型"""
+        return OllamaEmbeddingClient(self.config.base_url, self.config.model_name)
 
     def embed(self, text: str) -> List[float]:
         """生成文本嵌入"""
-        model = self._get_model()
-        embedding = model.encode(text, normalize_embeddings=True)
-        return embedding.tolist()
+        if self.config.model_type == "local":
+            model = self._get_local_model()
+            embedding = model.encode(text, normalize_embeddings=self.config.normalize_embeddings)
+            return embedding.tolist()
+        else:
+            client = self._get_api_model()
+            return client.embed(text)
 
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
         """批量生成文本嵌入"""
-        model = self._get_model()
-        embeddings = model.encode(texts, normalize_embeddings=True)
-        return embeddings.tolist()
+        if self.config.model_type == "local":
+            model = self._get_local_model()
+            embeddings = model.encode(
+                texts, 
+                normalize_embeddings=self.config.normalize_embeddings,
+                batch_size=self.config.batch_size
+            )
+            return embeddings.tolist()
+        else:
+            client = self._get_api_model()
+            return client.embed_batch(texts)
+
+    def get_dimension(self) -> int:
+        """获取向量维度"""
+        return self.config.dimension
 
 
-def get_embedding_provider() -> EmbeddingProvider:
+class ZhipuEmbeddingClient:
+    """智谱AI嵌入客户端"""
+
+    def __init__(self, client, model_name: str):
+        self.client = client
+        self.model_name = model_name
+
+    def embed(self, text: str) -> List[float]:
+        response = self.client.embeddings.create(
+            model=self.model_name,
+            input=text
+        )
+        return response.data[0].embedding
+
+    def embed_batch(self, texts: List[str]) -> List[List[float]]:
+        response = self.client.embeddings.create(
+            model=self.model_name,
+            input=texts
+        )
+        return [item.embedding for item in response.data]
+
+
+class OpenAIEmbeddingClient:
+    """OpenAI 兼容嵌入客户端"""
+
+    def __init__(self, client, model_name: str):
+        self.client = client
+        self.model_name = model_name
+
+    def embed(self, text: str) -> List[float]:
+        response = self.client.embeddings.create(
+            model=self.model_name,
+            input=text
+        )
+        return response.data[0].embedding
+
+    def embed_batch(self, texts: List[str]) -> List[List[float]]:
+        response = self.client.embeddings.create(
+            model=self.model_name,
+            input=texts
+        )
+        return [item.embedding for item in response.data]
+
+
+class OllamaEmbeddingClient:
+    """Ollama 嵌入客户端"""
+
+    def __init__(self, base_url: str, model_name: str):
+        self.base_url = base_url.rstrip('/')
+        self.model_name = model_name
+
+    def _request(self, texts: List[str]) -> List[List[float]]:
+        import requests
+        url = f"{self.base_url}/api/embeddings"
+        response = requests.post(
+            url,
+            json={"model": self.model_name, "prompt": texts[0]}
+        )
+        if response.status_code == 200:
+            return [response.json()["embedding"]]
+        raise Exception(f"Ollama embedding failed: {response.text}")
+
+    def embed(self, text: str) -> List[float]:
+        return self._request([text])[0]
+
+    def embed_batch(self, texts: List[str]) -> List[List[float]]:
+        return [self.embed(text) for text in texts]
+
+
+def get_embedding_provider(model_name: str = None) -> EmbeddingProvider:
     """获取嵌入提供者实例"""
-    return EmbeddingProvider()
+    return EmbeddingProvider(model_name)
+
+
+def list_available_embedding_models() -> Dict[str, Dict[str, Any]]:
+    """列出所有可用的嵌入模型配置"""
+    return settings.embedding_models
