@@ -188,6 +188,34 @@ def lora_merge(base_model_path, peft_model_path, output_path):
     click.echo("Model merging completed successfully")
 
 
+@cli.command(name='benchmark')
+@click.option('--url', type=str, default='http://localhost:8000', help='Base URL for API')
+@click.option('--num-requests', type=int, default=100, help='Number of requests')
+@click.option('--concurrency', type=int, default=10, help='Number of concurrent requests')
+@click.option('--warmup', type=int, default=10, help='Number of warmup requests')
+def benchmark(url, num_requests, concurrency, warmup):
+    """运行性能压测"""
+    from coderag.eval.benchmark import get_stress_test_runner
+    import requests as req
+
+    runner = get_stress_test_runner(url)
+
+    def test_health():
+        req.get(f"{url}/health")
+
+    def test_chat():
+        req.post(f"{url}/chat", json={"message": "hello", "stream": False})
+
+    print(f"\nRunning benchmark on {url}")
+    print(f"Requests: {num_requests}, Concurrency: {concurrency}")
+
+    runner.benchmark_endpoint("/health", test_health, num_requests=num_requests, concurrency=concurrency, warmup_requests=warmup)
+    runner.benchmark_endpoint("/chat", test_chat, num_requests=num_requests, concurrency=concurrency, warmup_requests=warmup)
+
+    output_path = runner.export_results()
+    click.echo(f"\nBenchmark results saved to: {output_path}")
+
+
 @lora_group.command(name='generate')
 @click.argument('model_path')
 @click.argument('prompt')

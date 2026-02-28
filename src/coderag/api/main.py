@@ -98,6 +98,10 @@ async def chat(request: Request, chat_request: ChatRequest):
     logger.info(f"Chat request received: {chat_request.messages[-1].content[:50]}...", extra={"request_id": request_id})
     
     try:
+        from coderag.security import get_input_validator, get_output_sanitizer
+        validator = get_input_validator()
+        sanitizer = get_output_sanitizer()
+        
         # 获取最后一条用户消息
         user_message = None
         for msg in reversed(chat_request.messages):
@@ -107,6 +111,9 @@ async def chat(request: Request, chat_request: ChatRequest):
         
         if not user_message or not user_message.strip():
             raise HTTPException(status_code=400, detail="User message cannot be empty")
+        
+        # 验证用户输入
+        user_message = validator.validate_message(user_message)
         
         from coderag.rag.retriever import Retriever
         from coderag.rag.prompt import PromptTemplate
@@ -163,13 +170,16 @@ async def chat(request: Request, chat_request: ChatRequest):
             for result in results
         ]
         
-        response = ChatResponse(
-            id=request_id,
-            message=answer,
-            references=references if chat_request.include_hits else [],
-            retrieval_results=retrieval_results if chat_request.include_hits else [],
-            timestamp=datetime.utcnow(),
-        )
+        # 构建响应并清理输出
+        response_data = {
+            "id": request_id,
+            "message": answer,
+            "references": references if chat_request.include_hits else [],
+            "retrieval_results": retrieval_results if chat_request.include_hits else [],
+            "timestamp": datetime.utcnow(),
+        }
+        
+        response = ChatResponse(**sanitizer.sanitize_response(response_data))
         
         logger.info("Chat request processed successfully", extra={"request_id": request_id})
         return response
