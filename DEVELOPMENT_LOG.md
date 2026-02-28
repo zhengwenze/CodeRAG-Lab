@@ -1,5 +1,51 @@
 # CodeRAG Lab 开发日志
 
+## 2026-02-28 - Week 9 & 10: 性能压测与安全防护
+
+### 今日完成的工作
+
+1. **添加性能压测功能**
+   - 创建 src/coderag/eval/benchmark.py 文件
+   - 实现 StressTestRunner 类，支持并发压测
+   - 支持延迟统计：P50、P95、P99
+   - 支持资源监控：CPU、内存
+   - 支持结果导出到 JSON 文件
+
+2. **添加安全防护功能**
+   - 创建 src/coderag/security.py 文件
+   - 实现 InputValidator 类：输入验证、危险字符过滤
+   - 实现 OutputSanitizer 类：HTML 转义、XSS 防护
+   - 支持验证：消息长度、角色、top_k 范围、文件路径
+   - 支持清理：来源信息、响应数据
+
+3. **增强 API 安全性**
+   - 在 api/schemas.py 中添加 Pydantic 字段验证器
+   - 在 api/main.py 中集成输入验证和输出清理
+   - 防止注入攻击、XSS 等安全问题
+
+4. **添加 psutil 依赖**
+   - 在 pyproject.toml 中添加 psutil 用于系统资源监控
+
+5. **添加 benchmark CLI 命令**
+   - 在 cli.py 中添加 benchmark 命令
+   - 支持自定义压测参数：URL、请求数、并发数、预热数
+
+### 遇到的问题与解决方案
+
+1. **CLI 参数冲突**
+   - 问题：benchmark 命令中使用 --requests 与 Python 内置模块冲突
+   - 解决方案：改用 --num-requests 参数名
+
+2. **Docker 部署 PYTHONPATH 问题**
+   - 问题：Docker 容器中启动命令找不到 coderag 模块
+   - 解决方案：在 Dockerfile 中添加 PYTHONPATH=/app/src 环境变量
+
+### 项目状态
+
+✅ **Week 9&10 任务已完成**：性能压测和安全防护功能完整实现
+
+---
+
 ## 2026-02-25 - Week 6: 集成 LoRA 微调与训练
 
 ### 今日完成的工作
