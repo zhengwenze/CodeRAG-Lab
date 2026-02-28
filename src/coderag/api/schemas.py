@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from datetime import datetime
+import re
 
 
 class HealthCheck(BaseModel):
@@ -13,12 +14,36 @@ class ChatMessage(BaseModel):
     role: str = Field(..., description="消息角色")
     content: str = Field(..., description="消息内容")
 
+    @field_validator('content')
+    @classmethod
+    def validate_content(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Message content cannot be empty")
+        if len(v) > 10000:
+            raise ValueError("Message content exceeds maximum length of 10000")
+        return v.strip()
+
+    @field_validator('role')
+    @classmethod
+    def validate_role(cls, v: str) -> str:
+        allowed_roles = ['user', 'assistant', 'system']
+        if v not in allowed_roles:
+            raise ValueError(f"Role must be one of: {', '.join(allowed_roles)}")
+        return v
+
 
 class ChatRequest(BaseModel):
     messages: List[ChatMessage] = Field(..., description="对话消息列表")
     top_k: int = Field(5, description="检索结果数量")
     stream: bool = Field(True, description="是否流式输出")
     include_hits: bool = Field(True, description="是否包含检索结果")
+
+    @field_validator('top_k')
+    @classmethod
+    def validate_top_k(cls, v: int) -> int:
+        if v < 1 or v > 100:
+            raise ValueError("top_k must be between 1 and 100")
+        return v
 
 
 class ChatResponse(BaseModel):
