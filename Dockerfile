@@ -17,10 +17,11 @@ COPY pyproject.toml .
 RUN pip install --no-cache-dir -e .
 
 COPY src/ /app/src/
-COPY data/ /app/data/
 
-RUN mkdir -p /app/logs
+RUN mkdir -p /app/logs /app/data
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.coderag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PYTHONPATH=/app/src
+
+CMD ["uvicorn", "coderag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

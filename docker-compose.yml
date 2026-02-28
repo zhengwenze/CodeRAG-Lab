@@ -1,27 +1,9 @@
 version: '3.8'
 
 services:
-  # PostgreSQL + pgvector 向量数据库
-  postgres:
-    image: pgvector/pgvector:pg15
-    container_name: coderag-postgres
-    environment:
-      POSTGRES_USER: coderag
-      POSTGRES_PASSWORD: coderag123
-      POSTGRES_DB: coderag
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U coderag -d coderag"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  # Qdrant 向量数据库 (可选)
+  # Qdrant 向量数据库
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.7.0
     container_name: coderag-qdrant
     ports:
       - "6333:6333"
@@ -29,17 +11,7 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     environment:
-      - QDRANT__STORAGE__STORAGE_PATH=/qdrant/storage
-
-  # llama.cpp API 服务 (可选)
-  llamacpp:
-    image: ghcr.io/ggerganov/llama.cpp:server
-    container_name: coderag-llamacpp
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./models:/models
-    command: --host 0.0.0.0 --port 8080 --model /models/model.gguf --n-gpu-layers 0
+      - QDRANT__SERVICE__GRPC_PORT=6334
     restart: unless-stopped
 
   # 后端 API 服务
@@ -52,7 +24,6 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
-      - ./models:/app/models
     environment:
       - PROJECT_NAME=CodeRAG Lab
       - ENVIRONMENT=production
@@ -64,14 +35,10 @@ services:
       - QDRANT_PORT=6333
       - QDRANT_COLLECTION=coderag
       - PGVECTOR_ENABLED=false
-      - PGVECTOR_CONNECTION_STRING=postgresql://coderag:coderag123@postgres:5432/coderag
-      - EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
       - EMBEDDING_DIM=384
       - EMBEDDING_DEVICE=cpu
-      - LLM_PROVIDER=llamacpp
-      - LLAMACPP_HOST=llamacpp
-      - LLAMACPP_PORT=8080
-      - LLAMACPP_MODEL_PATH=/models/model.gguf
+      - LLM_PROVIDER=mock
       - ENABLE_FULLTEXT=false
       - ENABLE_LLM_RERANK=false
       - TOP_K=5
@@ -84,32 +51,19 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  # 前端 Web UI (Next.js)
+  # 前端 Web UI (Vue3)
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: coderag-frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-    depends_on:
-      - api
-    restart: unless-stopped
-
-  # 前端 Web UI (Vue3 - 可选)
-  frontend-vue3:
     build:
       context: ./frontend-vue3
       dockerfile: Dockerfile
-    container_name: coderag-frontend-vue3
+    container_name: coderag-frontend
     ports:
       - "5173:80"
+    environment:
+      - VITE_API_BASE=/api
     depends_on:
       - api
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   qdrant_data:
