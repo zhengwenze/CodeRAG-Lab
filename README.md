@@ -4,10 +4,11 @@
 
 ## 核心价值
 - **可溯源 RAG**：回答附带来源引用，支持代码片段定位和行号级精度
-- **完整评测体系**：内置基准评测和回归测试，确保系统性能稳定
-- **工程化服务**：FastAPI 接口、Docker 部署、GitHub Actions CI/CD
-- **现代化前端**：Next.js 15+ 界面，支持代码库管理、RAG 问答、评测和微调
+- **完整评测体系**：内置基准评测、回归测试和性能压测
+- **工程化服务**：FastAPI 接口、Docker 一键部署、GitHub Actions CI/CD
+- **双前端支持**：Vue3 + Element Plus 或 Next.js 15+
 - **本地 LLM 支持**：集成 llama.cpp，支持私有部署和离线运行
+- **企业级安全**：输入验证、输出清理、XSS 防护
 
 ## Quickstart（快速跑通）
 
@@ -102,6 +103,11 @@ poetry run python -m coderag.cli ingest-repo --repo "D:\path\to\repo"
 * ✅ **现代化前端界面**：Next.js 15+、TypeScript、Tailwind CSS、响应式设计
 * ✅ **完整的用户交互**：代码库管理、聊天界面、评测结果、模型微调
 * ✅ **LoRA 微调支持**：集成 LoRA/QLoRA 微调，支持基础模型与微调模型对比评测
+* ✅ **混合检索**：向量检索 + BM25 全文检索融合
+* ✅ **LLM Rerank**：Cross-Encoder 重排序提升检索精度
+* ✅ **多格式文档解析**：支持 PDF、Word、Markdown、Text 等格式
+* ✅ **PostgreSQL 向量存储**：支持 pgvector 混合搜索
+* ✅ **性能压测**：内置压测工具，支持 RPS、延迟统计、资源监控
 
 ---
 
