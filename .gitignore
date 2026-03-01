@@ -74,10 +74,16 @@ logs/
 data/qdrant_storage/
 data/runs/
 data/ingested/
+data/datasets/
+data/eval/test_*
+
+# Test
+.env.test
 
 # Models
 models/*.gguf
-models/*.bin
+models/*/
+!models/README.md
 
 # OS
 .DS_Store
