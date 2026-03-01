@@ -273,7 +273,7 @@ final_score = vector_score * 0.7 + bm25_score * 0.3
 ### 6.2 项目结构
 
 ```
-frontend-vue3/
+web/
   src/
     api/           # API 调用封装
     router/        # 路由配置
@@ -358,7 +358,7 @@ pip install -e .
 python -m uvicorn src.coderag.api.main:app --reload --host 0.0.0.0 --port 8000
 
 # 前端
-cd frontend-vue3
+cd web
 npm install
 npm run dev
 ```

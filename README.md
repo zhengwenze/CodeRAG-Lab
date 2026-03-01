@@ -96,7 +96,7 @@ pip install -e .
 uvicorn coderag.api.main:app --host 0.0.0.0 --port 8000 --reload
 
 # 4. 启动前端
-cd frontend-vue3
+cd web
 npm install && npm run dev
 ```
 
@@ -143,7 +143,7 @@ code-rag-lab/
 │   ├── settings.py    # 配置管理
 │   ├── security.py   # 安全模块
 │   └── cli.py         # CLI 命令
-├── frontend-vue3/     # Vue3 前端
+├── web/                # Vue3 前端
 ├── frontend/          # Next.js 前端
 ├── data/              # 数据目录
 ├── docker-compose.yml # Docker 部署
