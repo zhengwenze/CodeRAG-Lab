@@ -90,15 +90,28 @@ class Settings(BaseSettings):
             "dimension": 768,
             "description": "Ollama 本地 embedding 模型",
         },
+        "minimax": {
+            "type": "api",
+            "model": "embedding-3-256",  # TODO: 确认实际模型名称
+            "base_url": "https://api.minimax.chat/v1",
+            "api_key": "",  # TODO: 填入你的 MiniMax API Key
+            "dimension": 1024,
+            "description": "MiniMax embedding API",
+        },
     }
 
     # LLM配置
-    llm_provider: str = "llamacpp"
+    llm_provider: str = "minimax"
 
     # llama.cpp配置
     llamacpp_host: str = "localhost"
     llamacpp_port: int = 8080
     llamacpp_model_path: str = "/path/to/model.gguf"
+
+    # MiniMax 配置 (请填入你的API Key)
+    minimax_api_key: str = ""  # TODO: 填入你的 MiniMax API Key
+    minimax_base_url: str = "https://api.minimax.chat/v1"
+    minimax_model: str = "MiniMax-M2.5"  # TODO: 根据实际模型名称调整
 
     # HF Transformers配置
     hf_model_name: str = "mistralai/Mistral-7B-v0.1"

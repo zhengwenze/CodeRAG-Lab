@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Optional, Dict, Any, Generator
 
 
 class LLMProvider(ABC):
@@ -11,7 +11,7 @@ class LLMProvider(ABC):
         pass
 
     @abstractmethod
-    def stream_generate(self, prompt: str, **kwargs) -> str:
+    def stream_generate(self, prompt: str, **kwargs) -> Generator[str, None, None]:
         """流式生成回答"""
         pass
 
@@ -122,6 +122,109 @@ class LlamaCppOpenAI(LLMProvider):
         return provider.embed(text)
 
 
+class MiniMaxProvider(LLMProvider):
+    """MiniMax 大模型提供商"""
+
+    def __init__(self, api_key: str = None, base_url: str = None, model: str = None):
+        from coderag.settings import settings
+        self.api_key = api_key or settings.minimax_api_key
+        self.base_url = base_url or settings.minimax_base_url
+        self.model = model or settings.minimax_model
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+
+    def generate(self, prompt: str, **kwargs) -> str:
+        """生成回答（非流式）"""
+        import requests
+        from coderag.settings import settings
+        
+        endpoint = f"{self.base_url}/text/chatcompletion_v2"
+        data = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            "temperature": kwargs.get("temperature", settings.temperature),
+            "top_p": kwargs.get("top_p", settings.top_p),
+            "max_tokens": kwargs.get("max_tokens", 1000),
+            "stream": False,
+        }
+
+        try:
+            response = requests.post(endpoint, json=data, headers=self.headers)
+            response.raise_for_status()
+            result = response.json()
+            # TODO: 根据实际API响应格式调整
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return "Sorry, I couldn't generate a response."
+
+    def stream_generate(self, prompt: str, **kwargs) -> Generator[str, None, None]:
+        """流式生成回答"""
+        import requests
+        from coderag.settings import settings
+        
+        endpoint = f"{self.base_url}/text/chatcompletion_v2"
+        data = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            "temperature": kwargs.get("temperature", settings.temperature),
+            "top_p": kwargs.get("top_p", settings.top_p),
+            "max_tokens": kwargs.get("max_tokens", 1000),
+            "stream": True,
+        }
+
+        try:
+            response = requests.post(
+                endpoint, json=data, headers=self.headers, stream=True
+            )
+            response.raise_for_status()
+
+            full_response = ""
+            for chunk in response.iter_content(chunk_size=None):
+                if chunk:
+                    chunk_str = chunk.decode('utf-8')
+                    lines = chunk_str.split('\n')
+                    for line in lines:
+                        if line.startswith('data: '):
+                            data_str = line[6:]
+                            if data_str == '[DONE]':
+                                break
+                            import json
+                            try:
+                                chunk_data = json.loads(data_str)
+                                if "choices" in chunk_data:
+                                    delta = chunk_data["choices"][0].get("delta", {})
+                                    if "content" in delta:
+                                        content = delta["content"]
+                                        full_response += content
+                                        yield content
+                            except json.JSONDecodeError:
+                                pass
+            return full_response
+        except Exception as e:
+            print(f"Error streaming response: {e}")
+            yield "Sorry, I couldn't generate a response."
+
+    def embed(self, text: str) -> List[float]:
+        """生成文本嵌入"""
+        from coderag.llm.embedding import get_embedding_provider
+        # 使用配置中的 MiniMax embedding 模型
+        provider = get_embedding_provider("minimax")
+        return provider.embed(text)
+
+
 class LLMProviderFactory:
     """LLM提供者工厂"""
 
@@ -130,6 +233,8 @@ class LLMProviderFactory:
         """获取LLM提供者"""
         if provider_name == "llamacpp":
             return LlamaCppOpenAI(**kwargs)
+        elif provider_name == "minimax":
+            return MiniMaxProvider(**kwargs)
         elif provider_name == "hf":
             raise NotImplementedError("HF provider not implemented yet")
         else:

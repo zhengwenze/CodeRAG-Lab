@@ -28,8 +28,19 @@ class EmbeddingProvider:
             return self._get_openai_model()
         elif self.config.model_type == "ollama":
             return self._get_ollama_model()
+        elif self.config.model_type == "minimax":
+            return self._get_minimax_model()
         else:
             raise ValueError(f"不支持的 API 模型类型: {self.config.model_type}")
+
+    def _get_minimax_model(self):
+        """MiniMax 嵌入模型"""
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=self.config.api_key, base_url=self.config.base_url)
+            return MiniMaxEmbeddingClient(client, self.config.model_name)
+        except ImportError:
+            raise ImportError("请安装 OpenAI SDK: pip install openai")
 
     def _get_zhipu_model(self):
         """智谱AI嵌入模型"""
@@ -149,6 +160,28 @@ class OllamaEmbeddingClient:
 
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
         return [self.embed(text) for text in texts]
+
+
+class MiniMaxEmbeddingClient:
+    """MiniMax 嵌入客户端 (OpenAI 兼容格式)"""
+
+    def __init__(self, client, model_name: str):
+        self.client = client
+        self.model_name = model_name
+
+    def embed(self, text: str) -> List[float]:
+        response = self.client.embeddings.create(
+            model=self.model_name,
+            input=text
+        )
+        return response.data[0].embedding
+
+    def embed_batch(self, texts: List[str]) -> List[List[float]]:
+        response = self.client.embeddings.create(
+            model=self.model_name,
+            input=texts
+        )
+        return [item.embedding for item in response.data]
 
 
 def get_embedding_provider(model_name: str = None) -> EmbeddingProvider:
