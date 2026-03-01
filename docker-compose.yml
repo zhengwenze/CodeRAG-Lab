@@ -57,7 +57,7 @@ services:
   # 前端 Web UI (Vue3)
   frontend:
     build:
-      context: ./frontend-vue3
+      context: ./web
       dockerfile: Dockerfile
     container_name: coderag-frontend
     ports:
