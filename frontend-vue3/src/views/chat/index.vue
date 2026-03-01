@@ -46,7 +46,8 @@
             :rows="3"
             placeholder="请输入您的问题..."
             resize="none"
-            @keydown.enter.ctrl="sendMessage"
+            @keydown.enter.prevent="sendMessage"
+            @keydown.ctrl.enter.prevent="handleCtrlEnter"
           />
           <el-button
             type="primary"
@@ -59,7 +60,7 @@
           </el-button>
         </div>
         <div class="input-tips">
-          <span>Ctrl + Enter 发送</span>
+          <span>Enter 发送 · Ctrl + Enter 换行</span>
         </div>
       </div>
     </div>
@@ -79,6 +80,10 @@ const messagesRef = ref(null)
 
 const formatMessage = (content) => {
   return content.replace(/\n/g, '<br>')
+}
+
+const handleCtrlEnter = () => {
+  inputMessage.value += '\n'
 }
 
 const sendMessage = async () => {

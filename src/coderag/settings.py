@@ -170,8 +170,9 @@ class Settings(BaseSettings):
         )
 
     class Config:
-        env_file = ".env"
+        env_file = (".env.local", ".env")
         case_sensitive = False
+        extra = "ignore"
 
 
 settings = Settings()
