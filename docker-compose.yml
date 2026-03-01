@@ -38,7 +38,10 @@ services:
       - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
       - EMBEDDING_DIM=384
       - EMBEDDING_DEVICE=cpu
-      - LLM_PROVIDER=mock
+      - LLM_PROVIDER=minimax
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-your_minimax_api_key_here}
+      - MINIMAX_BASE_URL=https://api.minimax.chat/v1
+      - MINIMAX_MODEL=MiniMax-M2.5
       - ENABLE_FULLTEXT=false
       - ENABLE_LLM_RERANK=false
       - TOP_K=5
