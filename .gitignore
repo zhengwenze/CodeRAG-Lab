@@ -82,6 +82,12 @@ data/eval/test_*
 # Test
 .env.test
 
+# Pytest cache
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
 # Models
 models/*.gguf
 models/*/

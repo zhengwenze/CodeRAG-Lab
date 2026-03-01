@@ -16,16 +16,16 @@
 
 ## ⭐ 核心亮点（面试必读）
 
-| 亮点 | 说明 |
-|------|------|
-| **混合检索** | 向量检索 + BM25 全文检索融合，显著提升召回率 |
-| **LLM Rerank** | Cross-Encoder 重排序，精准提升检索质量 |
+| 亮点             | 说明                                           |
+| ---------------- | ---------------------------------------------- |
+| **混合检索**     | 向量检索 + BM25 全文检索融合，显著提升召回率   |
+| **LLM Rerank**   | Cross-Encoder 重排序，精准提升检索质量         |
 | **完整评测体系** | 内置基准评测、回归测试、性能压测，数据驱动优化 |
-| **LoRA 微调** | PEFT/LoRA 微调支持，基础模型与微调模型对比评测 |
-| **多格式解析** | PDF、Word、Markdown、Text 等格式统一处理 |
-| **双向量存储** | Qdrant / FAISS / PostgreSQL+pgvector 灵活选择 |
-| **企业级安全** | 输入验证、输出清理、XSS 防护 |
-| **一键部署** | Docker Compose 全链路启动，开箱即用 |
+| **LoRA 微调**    | PEFT/LoRA 微调支持，基础模型与微调模型对比评测 |
+| **多格式解析**   | PDF、Word、Markdown、Text 等格式统一处理       |
+| **双向量存储**   | Qdrant / FAISS / PostgreSQL+pgvector 灵活选择  |
+| **企业级安全**   | 输入验证、输出清理、XSS 防护                   |
+| **一键部署**     | Docker Compose 全链路启动，开箱即用            |
 
 ---
 
@@ -111,7 +111,7 @@ npm install && npm run dev
 - [x] **LLM Rerank** — Cross-Encoder 重排序
 - [x] **多格式文档解析** — PDF / Word / Markdown / Text / CSV / JSON / YAML
 - [x] **向量存储** — Qdrant / FAISS / pgvector
-- [x] **本地 LLM** — llama.cpp / Ollama / OpenAI / 智谱AI
+- [x] **本地 LLM** — llama.cpp / Ollama / OpenAI / 智谱 AI
 
 ### ✅ 评测与优化
 
@@ -134,15 +134,16 @@ npm install && npm run dev
 
 ```
 code-rag-lab/
-├── src/coderag/
-│   ├── api/           # FastAPI 接口
-│   ├── ingest/        # 文档解析与分块
-│   ├── rag/           # 检索与 RAG 核心
-│   ├── llm/           # LLM 提供商与微调
-│   ├── eval/          # 评测与压测
-│   ├── settings.py    # 配置管理
-│   ├── security.py   # 安全模块
-│   └── cli.py         # CLI 命令
+├── server/
+│   └── src/coderag/  # 后端源码
+│       ├── api/           # FastAPI 接口
+│       ├── ingest/        # 文档解析与分块
+│       ├── rag/           # 检索与 RAG 核心
+│       ├── llm/           # LLM 提供商与微调
+│       ├── eval/          # 评测与压测
+│       ├── settings.py    # 配置管理
+│       ├── security.py    # 安全模块
+│       └── cli.py         # CLI 命令
 ├── web/                # Vue3 前端
 ├── frontend/          # Next.js 前端
 ├── data/              # 数据目录
@@ -158,6 +159,7 @@ code-rag-lab/
 ### Q1: RAG 的核心思想？
 
 **RAG（检索增强生成）**通过从外部知识库检索相关文档，将检索结果作为上下文提供给 LLM，解决：
+
 - LLM 知识过时
 - 幻觉问题
 - 无法引用来源
@@ -175,10 +177,10 @@ code-rag-lab/
 
 ### Q4: 向量检索 vs 全文检索？
 
-| 类型 | 优点 | 缺点 |
-|------|------|------|
-| 向量检索 | 语义理解、同义词 | 计算量大 |
-| 全文检索 | 精确匹配速度快 | 无法理解语义 |
+| 类型     | 优点             | 缺点         |
+| -------- | ---------------- | ------------ |
+| 向量检索 | 语义理解、同义词 | 计算量大     |
+| 全文检索 | 精确匹配速度快   | 无法理解语义 |
 
 **混合检索**结合两者优势，取长补短。
 
@@ -186,12 +188,12 @@ code-rag-lab/
 
 ## 📊 性能指标
 
-| 指标 | 说明 |
-|------|------|
-| 检索延迟 | < 100ms (本地向量) |
-| 吞吐量 | 50+ QPS |
+| 指标     | 说明                                   |
+| -------- | -------------------------------------- |
+| 检索延迟 | < 100ms (本地向量)                     |
+| 吞吐量   | 50+ QPS                                |
 | 评测指标 | hit_rate@k, citation_rate, recall, MRR |
-| 压测支持 | 1000+ 并发请求 |
+| 压测支持 | 1000+ 并发请求                         |
 
 ---
 
