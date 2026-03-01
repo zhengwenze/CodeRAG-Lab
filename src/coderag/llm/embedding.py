@@ -16,8 +16,29 @@ class EmbeddingProvider:
 
     def _get_local_model(self):
         """加载本地 Sentence Transformers 模型"""
+        import os
         if self.model is None:
-            self.model = SentenceTransformer(self.model_name, device=self.config.device)
+            cache_dir = os.path.expanduser("~/.cache/huggingface/hub")
+            model_cache = os.path.join(cache_dir, f"models--{self.model_name.replace('/', '--')}")
+            
+            # 检查模型缓存是否完整
+            if os.path.exists(model_cache):
+                snapshot_dir = os.path.join(model_cache, "snapshots")
+                if os.path.exists(snapshot_dir):
+                    for snapshot in os.listdir(snapshot_dir):
+                        config_file = os.path.join(snapshot_dir, snapshot, "config.json")
+                        if not os.path.exists(config_file):
+                            logger.warning(f"Model cache incomplete, will re-download: {self.model_name}")
+                            # 删除不完整的缓存
+                            import shutil
+                            shutil.rmtree(model_cache, ignore_errors=True)
+                            break
+            
+            try:
+                self.model = SentenceTransformer(self.model_name, device=self.config.device)
+            except Exception as e:
+                logger.error(f"Failed to load model {self.model_name}: {e}")
+                raise
         return self.model
 
     def _get_api_model(self):
@@ -67,26 +88,50 @@ class EmbeddingProvider:
     def embed(self, text: str) -> List[float]:
         """生成文本嵌入"""
         if self.config.model_type == "local":
-            model = self._get_local_model()
-            embedding = model.encode(text, normalize_embeddings=self.config.normalize_embeddings)
-            return embedding.tolist()
+            try:
+                model = self._get_local_model()
+                embedding = model.encode(text, normalize_embeddings=self.config.normalize_embeddings)
+                return embedding.tolist()
+            except Exception as e:
+                logger.warning(f"Failed to load local model, using simple embedding: {e}")
+                from coderag.llm.simple_embedding import get_simple_embedding_provider
+                simple_provider = get_simple_embedding_provider(self.config.dimension)
+                return simple_provider.embed(text)
         else:
-            client = self._get_api_model()
-            return client.embed(text)
+            try:
+                client = self._get_api_model()
+                return client.embed(text)
+            except Exception as e:
+                logger.warning(f"Failed to use API embedding, using simple embedding: {e}")
+                from coderag.llm.simple_embedding import get_simple_embedding_provider
+                simple_provider = get_simple_embedding_provider(self.config.dimension)
+                return simple_provider.embed(text)
 
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
         """批量生成文本嵌入"""
         if self.config.model_type == "local":
-            model = self._get_local_model()
-            embeddings = model.encode(
-                texts, 
-                normalize_embeddings=self.config.normalize_embeddings,
-                batch_size=self.config.batch_size
-            )
-            return embeddings.tolist()
+            try:
+                model = self._get_local_model()
+                embeddings = model.encode(
+                    texts, 
+                    normalize_embeddings=self.config.normalize_embeddings,
+                    batch_size=self.config.batch_size
+                )
+                return embeddings.tolist()
+            except Exception as e:
+                logger.warning(f"Failed to load local model, using simple embedding: {e}")
+                from coderag.llm.simple_embedding import get_simple_embedding_provider
+                simple_provider = get_simple_embedding_provider(self.config.dimension)
+                return simple_provider.embed_batch(texts)
         else:
-            client = self._get_api_model()
-            return client.embed_batch(texts)
+            try:
+                client = self._get_api_model()
+                return client.embed_batch(texts)
+            except Exception as e:
+                logger.warning(f"Failed to use API embedding, using simple embedding: {e}")
+                from coderag.llm.simple_embedding import get_simple_embedding_provider
+                simple_provider = get_simple_embedding_provider(self.config.dimension)
+                return simple_provider.embed_batch(texts)
 
     def get_dimension(self) -> int:
         """获取向量维度"""

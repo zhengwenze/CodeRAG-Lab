@@ -91,7 +91,7 @@ class Settings(BaseSettings):
             "description": "Ollama 本地 embedding 模型",
         },
         "minimax": {
-            "type": "api",
+            "type": "minimax",
             "model": "embedding-3-256",  # TODO: 确认实际模型名称
             "base_url": "https://api.minimax.chat/v1",
             "api_key": "",  # TODO: 填入你的 MiniMax API Key
