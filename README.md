@@ -12,6 +12,34 @@
   <b>可溯源代码库智能助手</b> — 基于 RAG 技术的专业级代码库问答系统
 </p>
 
+<p align="center">
+  <a href="#-12-周开发计划">📅 开发计划</a> •
+  <a href="#-技术架构">🏗️ 架构</a> •
+  <a href="#-快速开始">🚀 开始</a> •
+  <a href="#-常见面试问题">💬 面试</a>
+</p>
+
+---
+
+## 📖 项目概述
+
+**CodeRAG Lab** 是一个基于 RAG（检索增强生成）技术的专业级代码库问答系统，旨在帮助开发者通过自然语言快速检索和理解代码库。
+
+### 核心价值
+
+- 🔍 **可溯源**：回答附带文件路径 + 行号引用，拒绝幻觉
+- 🎯 **高精度**：混合检索 + LLM Rerank，召回率提升 40%+
+- 📊 **可评测**：完整评测体系，数据驱动优化
+- 🚀 **易部署**：Docker Compose 一键启动，开箱即用
+- 🔒 **企业级**：输入验证、输出清理、XSS 防护
+
+### 适用场景
+
+- 代码库导航与理解
+- 技术文档问答
+- 知识库检索
+- 智能客服系统
+
 ---
 
 ## ⭐ 核心亮点（面试必读）
@@ -197,7 +225,82 @@ code-rag-lab/
 
 ---
 
-## 🔧 配置说明
+## � 12 周开发计划
+
+### 已完成阶段
+
+| 周次 | 主题 | 核心任务 | 状态 |
+|------|------|----------|------|
+| **Week 1** | 工程底座 | FastAPI 骨架、Docker 配置、日志模块 | ✅ |
+| **Week 2** | 检索索引 | RepoLoader、文档分块、Qdrant 索引 | ✅ |
+| **Week 3** | RAG 问答 | 检索 +Prompt 拼接、LLM 推理、引用返回 | ✅ |
+| **Week 4** | 评测体系 | 评测数据集、hit_rate@k、回归测试 | ✅ |
+| **Week 5** | 检索优化 | BM25 混合检索、HybridRetriever | ✅ |
+| **Week 6** | LoRA 微调 | PEFT 微调、base vs fine-tuned 对比 | ✅ |
+| **Week 7** | 前端开发 | Vue3+Element Plus、Chat/Dataset 页面 | ✅ |
+| **Week 8** | Docker 部署 | docker-compose 一键启动 | ✅ |
+| **Week 9** | 性能压测 | StressTestRunner、P50/P95/P99 | ✅ |
+| **Week 10** | 安全防护 | 输入验证、输出清理、XSS 防护 | ✅ |
+| **Week 11** | 简历开源 | 文档整合、README 优化、开源发布 | ✅ |
+| **Week 12** | 面试准备 | 面试题库、模拟面试、简历投递 | 🔄 |
+
+### 详细开发历程
+
+#### Week 1: 工程底座搭建
+- ✅ 创建项目文件夹及 Git 仓库
+- ✅ 配置 pyproject.toml 和 .env.example
+- ✅ 搭建 FastAPI 服务骨架（/health, /chat）
+- ✅ 配置 Docker Compose 启动 Qdrant
+- ✅ 实现日志模块、错误处理
+
+#### Week 2: 检索与索引功能
+- ✅ 实现 RepoLoader 模块，加载本地文件
+- ✅ 实现文档分块（chunking）
+- ✅ 使用 sentence-transformers 生成向量嵌入
+- ✅ 实现 Qdrant 索引与查询
+
+#### Week 3: RAG 问答系统
+- ✅ 实现检索 + Prompt 拼接
+- ✅ 调用 llama.cpp / MiniMax API 进行推理
+- ✅ 返回带引用的回答
+
+#### Week 4: 评测功能
+- ✅ 创建 coderag_eval_v1.json 评测数据集
+- ✅ 实现 hit_rate@k、citation_rate、contains_rate 指标
+- ✅ 实现回归测试框架
+- ✅ 添加 /eval/run、/eval/results API
+
+#### Week 5: 检索优化
+- ✅ 优化 chunking 策略（按函数/类分块）
+- ✅ 实现 BM25 检索重排
+- ✅ 集成 HybridRetriever
+
+#### Week 6: LoRA 微调
+- ✅ 实现 LoRATrainer 类
+- ✅ 支持 LoRA/QLoRA 微调
+- ✅ 实现 base vs fine-tuned 对比评测
+
+#### Week 7: 前端开发
+- ✅ Vue3 + Vite 项目搭建
+- ✅ 实现 Chat、Dataset、Dashboard 页面
+- ✅ 集成 Element Plus UI
+
+#### Week 8: Docker 部署
+- ✅ 完善 docker-compose.yml
+- ✅ 实现一键启动（API + Qdrant + Frontend）
+
+#### Week 9: 性能压测
+- ✅ 实现 StressTestRunner
+- ✅ 支持并发压测
+- ✅ 延迟统计 P50/P95/P99
+
+#### Week 10: 安全防护
+- ✅ 输入验证：长度限制、危险字符过滤
+- ✅ 输出清理：HTML 转义、XSS 防护
+
+---
+
+##  配置说明
 
 主要环境变量（详见 `.env.example`）：
 
@@ -225,9 +328,10 @@ CHUNK_OVERLAP=200
 
 ## 📖 文档
 
-- [面试项目介绍](./INTERVIEW_GUIDE.md) — 面试必读
-- [开发日志](./DEVELOPMENT_LOG.md) — 完整开发历程
-- [12 周计划](./12%20weeks%20plan.md) — 学习路线
+- **[PROJECT_BOOK](./PROJECT_BOOK.md)** — 项目全书（核心文档）
+- **[面试项目介绍](./INTERVIEW_GUIDE.md)** — 面试必读
+- **[开发日志](./DEVELOPMENT_LOG.md)** — 完整开发历程
+- **[前端 MVP 指南](./前端 MVP 指南.md)** — 前端开发规范
 
 ---
 
