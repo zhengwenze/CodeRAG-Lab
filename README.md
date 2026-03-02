@@ -100,7 +100,6 @@
 graph TB
     subgraph Frontend["前端层"]
         A1[Vue3 + Element Plus]
-        A2[Next.js 15]
     end
 
     subgraph API["API 服务层 FastAPI"]
@@ -310,7 +309,7 @@ curl -X POST http://localhost:8000/eval/run \
 | ------------------- | --------------------------------- | ---- |
 | **Docker 一键部署** | docker-compose 全链路启动         | ✅   |
 | **RESTful API**     | FastAPI + Pydantic                | ✅   |
-| **双前端**          | Vue3 + Element Plus / Next.js 15+ | ✅   |
+| **前端**            | Vue3 + Element Plus                 | ✅   |
 | **安全防护**        | 输入验证 / 输出清理 / XSS 防护    | ✅   |
 | **CI/CD**           | GitHub Actions                    | ✅   |
 
@@ -336,8 +335,6 @@ code-rag-lab/
 │   ├── requirements.txt    # 依赖管理
 │   └── .env.example        # 环境变量示例
 ├── web/                   # Vue3 前端
-├── frontend/              # Next.js 前端
-├── frontend-vue3/         # Vue3 前端（备用）
 ├── data/                  # 数据目录
 │   └── eval/             # 评测数据集
 ├── docker/                # Docker 配置
