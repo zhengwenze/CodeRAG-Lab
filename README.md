@@ -328,7 +328,6 @@ CHUNK_OVERLAP=200
 
 ## 📖 文档
 
-- **[PROJECT_BOOK](./PROJECT_BOOK.md)** — 项目全书（核心文档）
 - **[面试项目介绍](./INTERVIEW_GUIDE.md)** — 面试必读
 - **[开发日志](./DEVELOPMENT_LOG.md)** — 完整开发历程
 - **[前端 MVP 指南](./前端 MVP 指南.md)** — 前端开发规范
