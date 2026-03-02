@@ -97,17 +97,17 @@
 ## 🏗️ 技术架构
 
 ```mermaid
-flowchart TB
+graph TB
     subgraph Frontend["前端层"]
         A1[Vue3 + Element Plus]
         A2[Next.js 15]
     end
 
     subgraph API["API 服务层 FastAPI"]
-        B1[/chat<br/>问答接口]
-        B2[/datasets<br/>数据集接口]
-        B3[/eval<br/>评测接口]
-        B4[/benchmark<br/>压测接口]
+        B1[/chat<br/>问答接口/]
+        B2[/datasets<br/>数据集接口/]
+        B3[/eval<br/>评测接口/]
+        B4[/benchmark<br/>压测接口/]
     end
 
     subgraph RAG["RAG 核心层"]
