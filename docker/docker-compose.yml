@@ -40,7 +40,7 @@ services:
       - EMBEDDING_DIM=384
       - EMBEDDING_DEVICE=cpu
       - LLM_PROVIDER=minimax
-      - MINIMAX_API_KEY=sk-cp-GPmNieYH-RUm6Cv1TGZxVU73toV_-R8_2H4_8Vkq_08ycBMfL8Qj-e04xvJJxmO7LcwBjGorxmqS0zYSZfQEd60-1Xpi7kBUdCNXyZbx3LpA5-dRf_-R_bk
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
       - MINIMAX_BASE_URL=https://api.minimax.chat/v1
       - MINIMAX_MODEL=MiniMax-M2.5
       - ENABLE_FULLTEXT=false
