@@ -24,14 +24,9 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
-      - ../.env.local:/.env.local:ro
+    env_file:
+      - ../.env.docker
     environment:
-      - PROJECT_NAME=CodeRAG Lab
-      - ENVIRONMENT=production
-      - DEBUG=False
-      - API_HOST=0.0.0.0
-      - API_PORT=8000
-      - VECTOR_STORE=qdrant
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - QDRANT_COLLECTION=coderag
@@ -40,7 +35,6 @@ services:
       - EMBEDDING_DIM=384
       - EMBEDDING_DEVICE=cpu
       - LLM_PROVIDER=minimax
-      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
       - MINIMAX_BASE_URL=https://api.minimax.chat/v1
       - MINIMAX_MODEL=MiniMax-M2.5
       - ENABLE_FULLTEXT=false
