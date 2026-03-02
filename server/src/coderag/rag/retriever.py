@@ -2,11 +2,13 @@ from typing import List, Dict, Any, Optional
 from coderag.rag.qdrant_store import QdrantStore
 from coderag.rag.faiss_store import FaissStore
 from coderag.rag.bm25_rerank import HybridRetriever
-from coderag.rag.reranker import LLMReranker, get_llm_reranker
 from coderag.rag.fulltext_search import FullTextSearcher
 from coderag.rag.hybrid_search import HybridSearcher
 from coderag.settings import settings
 
+# 尝试导入 LLM 重排序，失败则跳过
+LLMReranker = None
+get_llm_reranker = None
 
 class Retriever:
     """检索器，支持多种检索模式和重排序
@@ -32,6 +34,14 @@ class Retriever:
             enable_fulltext: 是否启用全文检索
             reranker_model: LLM 重排序模型名称
         """
+        global LLMReranker, get_llm_reranker
+        if enable_llm_rerank and LLMReranker is None:
+            try:
+                from coderag.rag.reranker import LLMReranker, get_llm_reranker
+            except ImportError:
+                enable_llm_rerank = False
+                print("Warning: LLM reranking not available, skipping")
+        
         if settings.vector_store == "faiss":
             self.store = FaissStore()
         else:
@@ -44,7 +54,7 @@ class Retriever:
         self.hybrid_retriever = HybridRetriever(vector_weight=0.5, bm25_weight=0.5)
         
         self.llm_reranker: Optional[LLMReranker] = None
-        if enable_llm_rerank:
+        if enable_llm_rerank and get_llm_reranker:
             self.llm_reranker = get_llm_reranker(reranker_model)
         
         self.fulltext_searcher: Optional[FullTextSearcher] = None
