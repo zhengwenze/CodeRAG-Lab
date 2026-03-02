@@ -10,7 +10,7 @@ class QdrantStore:
     def __init__(self):
         self.client = QdrantClient(
             host=settings.qdrant_host,
-            port=settings.qdrant_port,
+            port=settings.qdrant_port
         )
         self.collection_name = settings.qdrant_collection
         self.embedding_dim = settings.embedding_dim
@@ -75,24 +75,51 @@ class QdrantStore:
     def search(self, query_vector: List[float], top_k: int = 5):
         """搜索相似向量"""
         try:
-            results = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=query_vector,
-                limit=top_k,
-                with_payload=True,
-                with_vectors=False,
-            )
+            # 尝试使用 search 方法
+            try:
+                results = self.client.search(
+                    collection_name=self.collection_name,
+                    query_vector=query_vector,
+                    limit=top_k,
+                    with_payload=True,
+                    with_vectors=False,
+                )
+            except AttributeError:
+                # 如果 search 方法不存在，尝试使用查询 API
+                from qdrant_client.models import SearchRequest
+                results = self.client.query(
+                    collection_name=self.collection_name,
+                    search_request=SearchRequest(
+                        vector=query_vector,
+                        limit=top_k,
+                        with_payload=True,
+                        with_vectors=False,
+                    )
+                )
 
             search_results = []
             for i, result in enumerate(results):
-                search_results.append({
-                    'file_path': result.payload.get('file_path'),
-                    'start_line': result.payload.get('start_line'),
-                    'end_line': result.payload.get('end_line'),
-                    'content': result.payload.get('content'),
-                    'score': result.score,
-                    'rank': i + 1,
-                })
+                # 处理不同版本的响应格式
+                if hasattr(result, 'payload'):
+                    # 新版本格式
+                    search_results.append({
+                        'file_path': result.payload.get('file_path'),
+                        'start_line': result.payload.get('start_line'),
+                        'end_line': result.payload.get('end_line'),
+                        'content': result.payload.get('content'),
+                        'score': result.score,
+                        'rank': i + 1,
+                    })
+                else:
+                    # 旧版本格式
+                    search_results.append({
+                        'file_path': result.get('payload', {}).get('file_path'),
+                        'start_line': result.get('payload', {}).get('start_line'),
+                        'end_line': result.get('payload', {}).get('end_line'),
+                        'content': result.get('payload', {}).get('content'),
+                        'score': result.get('score'),
+                        'rank': i + 1,
+                    })
 
             return search_results
         except Exception as e:
