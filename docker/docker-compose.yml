@@ -24,6 +24,7 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+      - ../.env.local:/.env.local:ro
     environment:
       - PROJECT_NAME=CodeRAG Lab
       - ENVIRONMENT=production
@@ -39,7 +40,7 @@ services:
       - EMBEDDING_DIM=384
       - EMBEDDING_DEVICE=cpu
       - LLM_PROVIDER=minimax
-      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-your_minimax_api_key_here}
+      - MINIMAX_API_KEY=sk-cp-GPmNieYH-RUm6Cv1TGZxVU73toV_-R8_2H4_8Vkq_08ycBMfL8Qj-e04xvJJxmO7LcwBjGorxmqS0zYSZfQEd60-1Xpi7kBUdCNXyZbx3LpA5-dRf_-R_bk
       - MINIMAX_BASE_URL=https://api.minimax.chat/v1
       - MINIMAX_MODEL=MiniMax-M2.5
       - ENABLE_FULLTEXT=false
