@@ -12,7 +12,7 @@
 
 PYTHON=python3
 PIP=pip3
-SRC_DIR=server/src
+SRC_DIR=server/app
 TEST_DIR=tests
 
 # 虚拟环境
@@ -30,7 +30,7 @@ install:
 
 # 启动开发服务器
 run:
-	$(PYTHON) -m uvicorn $(SRC_DIR).coderag.api.main:app --reload --host 0.0.0.0 --port 8000
+	$(PYTHON) -m uvicorn $(SRC_DIR).main:app --reload --host 0.0.0.0 --port 8000
 
 # 运行测试
 test:
@@ -48,14 +48,14 @@ format:
 
 # 运行评测
 eval:
-	$(PYTHON) -m $(SRC_DIR).coderag.eval.runner
+	$(PYTHON) -m server.src.coderag.eval.runner
 
 # 清理
 clean:
 	rm -rf $(VENV)
 	rm -rf __pycache__
-	rm -rf $(SRC_DIR)/**/__pycache__
-	rm -rf $(TEST_DIR)/**/__pycache__
+	rm -rf server/app/**/__pycache__
+	rm -rf server/src/**/__pycache__
 	rm -rf data/runs/*
 	rm -rf logs/*
 	rm -rf .pytest_cache

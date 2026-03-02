@@ -13,16 +13,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制整个项目结构
+COPY ../server/app/ /app/app/
 COPY ../server/src/ /app/src/
-COPY ../pyproject.toml /app/
+COPY ../server/requirements.txt /app/
 
 # 安装依赖
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p /app/logs /app/data
 
 EXPOSE 8000
 
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app:/app/src
 
-CMD ["uvicorn", "coderag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

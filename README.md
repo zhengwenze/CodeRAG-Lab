@@ -66,33 +66,30 @@
 ### 📸 界面预览
 
 > **Chat 界面** - 展示带引用来源的问答
-> 
-> ![Chat 界面](./screenshot/chat-demo.png)
-> *从提问到返回带引用回答的完整流程*
+>
+> ![Chat 界面](./screenshot/chat-demo.png) > _从提问到返回带引用回答的完整流程_
 
 > **数据集管理** - 支持多格式文档上传与解析
-> 
-> ![Dataset 界面](./screenshot/dataset-management.png)
-> *PDF、Word、Markdown 等格式统一处理*
+>
+> ![Dataset 界面](./screenshot/dataset-management.png) > _PDF、Word、Markdown 等格式统一处理_
 
 > **性能监控** - 实时查看系统状态
-> 
-> ![Dashboard 界面](./screenshot/dashboard.png)
-> *RPS、延迟、资源使用率一目了然*
+>
+> ![Dashboard 界面](./screenshot/dashboard.png) > _RPS、延迟、资源使用率一目了然_
 
 ---
 
 ## ⭐ 核心亮点（面试必读）
 
-| 亮点             | 说明                                           | 面试价值 |
-| ---------------- | ---------------------------------------------- | -------- |
+| 亮点             | 说明                                           | 面试价值   |
+| ---------------- | ---------------------------------------------- | ---------- |
 | **混合检索**     | 向量检索 + BM25 全文检索融合，显著提升召回率   | ⭐⭐⭐⭐⭐ |
 | **LLM Rerank**   | Cross-Encoder 重排序，精准提升检索质量         | ⭐⭐⭐⭐⭐ |
 | **完整评测体系** | 内置基准评测、回归测试、性能压测，数据驱动优化 | ⭐⭐⭐⭐⭐ |
-| **LoRA 微调**    | PEFT/LoRA 微调支持，基础模型与微调模型对比评测 | ⭐⭐⭐⭐ |
-| **多格式解析**   | PDF、Word、Markdown、Text 等格式统一处理       | ⭐⭐⭐⭐ |
-| **双向量存储**   | Qdrant / FAISS / PostgreSQL+pgvector 灵活选择  | ⭐⭐⭐⭐ |
-| **企业级安全**   | 输入验证、输出清理、XSS 防护                   | ⭐⭐⭐⭐ |
+| **LoRA 微调**    | PEFT/LoRA 微调支持，基础模型与微调模型对比评测 | ⭐⭐⭐⭐   |
+| **多格式解析**   | PDF、Word、Markdown、Text 等格式统一处理       | ⭐⭐⭐⭐   |
+| **双向量存储**   | Qdrant / FAISS / PostgreSQL+pgvector 灵活选择  | ⭐⭐⭐⭐   |
+| **企业级安全**   | 输入验证、输出清理、XSS 防护                   | ⭐⭐⭐⭐   |
 | **一键部署**     | Docker Compose 全链路启动，开箱即用            | ⭐⭐⭐⭐⭐ |
 
 ---
@@ -135,7 +132,7 @@ flowchart TB
     API --> RAG
     RAG --> Store
     RAG --> LLM
-    
+
     style Frontend fill:#e1f5ff
     style API fill:#fff3e0
     style RAG fill:#f3e5f5
@@ -171,6 +168,7 @@ docker-compose logs -f
 ```
 
 > ⚠️ **重要提示**：
+>
 > - 使用 **MiniMax API**：在 `.env` 中配置 `MINIMAX_API_KEY`
 > - 使用 **本地模型**：下载模型权重到 `/models` 目录，并配置 `LLM_PROVIDER=llamacpp`
 > - 默认配置使用 **MiniMax API**，需先获取 API Key
@@ -213,6 +211,7 @@ curl http://localhost:8000/health
 ```
 
 **响应：**
+
 ```json
 {
   "status": "ok",
@@ -238,6 +237,7 @@ curl -X POST http://localhost:8000/chat \
 ```
 
 **响应：**
+
 ```json
 {
   "id": "chat_abc123",
@@ -286,33 +286,33 @@ curl -X POST http://localhost:8000/eval/run \
 
 ### ✅ 核心功能
 
-| 功能 | 说明 | 状态 |
-|------|------|------|
-| **可溯源 RAG 问答** | 回答附带文件路径 + 行号引用 | ✅ |
-| **混合检索** | 向量 + BM25 加权融合 | ✅ |
-| **LLM Rerank** | Cross-Encoder 重排序 | ✅ |
-| **多格式文档解析** | PDF / Word / Markdown / Text / CSV / JSON / YAML | ✅ |
-| **向量存储** | Qdrant / FAISS / pgvector | ✅ |
-| **本地 LLM** | llama.cpp / Ollama / OpenAI / 智谱 AI | ✅ |
+| 功能                | 说明                                             | 状态 |
+| ------------------- | ------------------------------------------------ | ---- |
+| **可溯源 RAG 问答** | 回答附带文件路径 + 行号引用                      | ✅   |
+| **混合检索**        | 向量 + BM25 加权融合                             | ✅   |
+| **LLM Rerank**      | Cross-Encoder 重排序                             | ✅   |
+| **多格式文档解析**  | PDF / Word / Markdown / Text / CSV / JSON / YAML | ✅   |
+| **向量存储**        | Qdrant / FAISS / pgvector                        | ✅   |
+| **本地 LLM**        | llama.cpp / Ollama / OpenAI / 智谱 AI            | ✅   |
 
 ### ✅ 评测与优化
 
-| 功能 | 说明 | 状态 |
-|------|------|------|
-| **基准评测** | hit_rate@k / citation_rate / recall / MRR | ✅ |
-| **回归测试** | 对比历史结果，检测性能回退 | ✅ |
-| **性能压测** | RPS / 延迟统计 (P50/P95/P99) / 资源监控 | ✅ |
-| **LoRA 微调** | PEFT 微调 + 对比评测 | ✅ |
+| 功能          | 说明                                      | 状态 |
+| ------------- | ----------------------------------------- | ---- |
+| **基准评测**  | hit_rate@k / citation_rate / recall / MRR | ✅   |
+| **回归测试**  | 对比历史结果，检测性能回退                | ✅   |
+| **性能压测**  | RPS / 延迟统计 (P50/P95/P99) / 资源监控   | ✅   |
+| **LoRA 微调** | PEFT 微调 + 对比评测                      | ✅   |
 
 ### ✅ 工程化
 
-| 功能 | 说明 | 状态 |
-|------|------|------|
-| **Docker 一键部署** | docker-compose 全链路启动 | ✅ |
-| **RESTful API** | FastAPI + Pydantic | ✅ |
-| **双前端** | Vue3 + Element Plus / Next.js 15+ | ✅ |
-| **安全防护** | 输入验证 / 输出清理 / XSS 防护 | ✅ |
-| **CI/CD** | GitHub Actions | ✅ |
+| 功能                | 说明                              | 状态 |
+| ------------------- | --------------------------------- | ---- |
+| **Docker 一键部署** | docker-compose 全链路启动         | ✅   |
+| **RESTful API**     | FastAPI + Pydantic                | ✅   |
+| **双前端**          | Vue3 + Element Plus / Next.js 15+ | ✅   |
+| **安全防护**        | 输入验证 / 输出清理 / XSS 防护    | ✅   |
+| **CI/CD**           | GitHub Actions                    | ✅   |
 
 ---
 
@@ -320,27 +320,33 @@ curl -X POST http://localhost:8000/eval/run \
 
 ```
 code-rag-lab/
-├── server/
-│   └── src/coderag/       # 后端核心代码
-│       ├── api/           # FastAPI 接口
-│       ├── ingest/        # 文档解析与分块
-│       ├── rag/           # 检索与 RAG 核心
-│       ├── llm/           # LLM 提供商与微调
-│       ├── eval/          # 评测与压测
-│       ├── settings.py    # 配置管理
-│       ├── security.py    # 安全模块
-│       └── cli.py         # CLI 命令
+├── server/                  # 后端代码
+│   ├── app/                # API 层
+│   │   ├── api/            # API 路由和模型
+│   │   ├── services/       # 业务逻辑包装
+│   │   ├── utils/          # 工具函数
+│   │   ├── config.py       # 配置管理
+│   │   └── main.py         # FastAPI 入口
+│   ├── src/                # 核心业务逻辑
+│   │   ├── coderag/        # 原有核心实现
+│   │       ├── rag/        # 检索增强生成
+│   │       ├── llm/        # 大语言模型
+│   │       ├── eval/       # 评测系统
+│   │       └── ingest/     # 数据 ingestion
+│   ├── requirements.txt    # 依赖管理
+│   └── .env.example        # 环境变量示例
 ├── web/                   # Vue3 前端
 ├── frontend/              # Next.js 前端
+├── frontend-vue3/         # Vue3 前端（备用）
 ├── data/                  # 数据目录
 │   └── eval/             # 评测数据集
-├── docker/               # Docker 配置
-│   ├── backend/          # 后端 Dockerfile
-│   ├── frontend/         # 前端 Dockerfile
-│   └── sql/             # 数据库初始化脚本
-├── screenshot/           # 界面截图
-├── docker-compose.yml    # Docker 部署
-├── pyproject.toml        # Python 依赖
+├── docker/                # Docker 配置
+│   ├── backend/           # 后端 Dockerfile
+│   ├── frontend/          # 前端 Dockerfile
+│   └── sql/              # 数据库初始化脚本
+├── screenshot/            # 界面截图
+├── docker-compose.yml     # Docker 部署
+├── pyproject.toml         # Python 依赖
 └── README.md
 ```
 
@@ -383,18 +389,19 @@ CHUNK_OVERLAP=200
 ## 📊 性能指标
 
 > **测试环境说明**
+>
 > - **硬件**: Apple M1 Pro (16GB RAM)
 > - **向量库**: Qdrant v1.7.0 (本地部署)
 > - **数据量**: 100,000 条向量数据
 > - **Embedding**: BAAI/bge-small-en-v1.5 (384 维)
 > - **LLM**: MiniMax-M2.5 (API)
 
-| 指标 | 数值 | 说明 |
-|------|------|------|
-| **检索延迟** | < 100ms | P95 延迟，基于 10 万向量 |
-| **吞吐量** | 50+ QPS | 并发查询每秒 |
+| 指标         | 数值             | 说明                        |
+| ------------ | ---------------- | --------------------------- |
+| **检索延迟** | < 100ms          | P95 延迟，基于 10 万向量    |
+| **吞吐量**   | 50+ QPS          | 并发查询每秒                |
 | **评测指标** | hit_rate@5 = 78% | 基于 coderag_eval_v1 数据集 |
-| **压测支持** | 1000+ 并发 | 压力测试最大并发请求 |
+| **压测支持** | 1000+ 并发       | 压力测试最大并发请求        |
 
 ### 性能优化建议
 
@@ -412,22 +419,23 @@ CHUNK_OVERLAP=200
 <details>
 <summary><b>点击展开详细开发历程</b></summary>
 
-| 周次 | 主题 | 核心任务 | 状态 |
-|------|------|----------|------|
-| **Week 1** | 工程底座 | FastAPI 骨架、Docker 配置、日志模块 | ✅ |
-| **Week 2** | 检索索引 | RepoLoader、文档分块、Qdrant 索引 | ✅ |
-| **Week 3** | RAG 问答 | 检索+Prompt 拼接、LLM 推理、引用返回 | ✅ |
-| **Week 4** | 评测体系 | 评测数据集、hit_rate@k、回归测试 | ✅ |
-| **Week 5** | 检索优化 | BM25 混合检索、HybridRetriever | ✅ |
-| **Week 6** | LoRA 微调 | PEFT 微调、base vs fine-tuned 对比 | ✅ |
-| **Week 7** | 前端开发 | Vue3+Element Plus、Chat/Dataset 页面 | ✅ |
-| **Week 8** | Docker 部署 | docker-compose 一键启动 | ✅ |
-| **Week 9** | 性能压测 | StressTestRunner、P50/P95/P99 | ✅ |
-| **Week 10** | 安全防护 | 输入验证、输出清理、XSS 防护 | ✅ |
-| **Week 11** | 简历开源 | 文档整合、README 优化、开源发布 | ✅ |
-| **Week 12** | 面试准备 | 面试题库、模拟面试、简历投递 | 🔄 |
+| 周次        | 主题        | 核心任务                             | 状态 |
+| ----------- | ----------- | ------------------------------------ | ---- |
+| **Week 1**  | 工程底座    | FastAPI 骨架、Docker 配置、日志模块  | ✅   |
+| **Week 2**  | 检索索引    | RepoLoader、文档分块、Qdrant 索引    | ✅   |
+| **Week 3**  | RAG 问答    | 检索+Prompt 拼接、LLM 推理、引用返回 | ✅   |
+| **Week 4**  | 评测体系    | 评测数据集、hit_rate@k、回归测试     | ✅   |
+| **Week 5**  | 检索优化    | BM25 混合检索、HybridRetriever       | ✅   |
+| **Week 6**  | LoRA 微调   | PEFT 微调、base vs fine-tuned 对比   | ✅   |
+| **Week 7**  | 前端开发    | Vue3+Element Plus、Chat/Dataset 页面 | ✅   |
+| **Week 8**  | Docker 部署 | docker-compose 一键启动              | ✅   |
+| **Week 9**  | 性能压测    | StressTestRunner、P50/P95/P99        | ✅   |
+| **Week 10** | 安全防护    | 输入验证、输出清理、XSS 防护         | ✅   |
+| **Week 11** | 简历开源    | 文档整合、README 优化、开源发布      | ✅   |
+| **Week 12** | 面试准备    | 面试题库、模拟面试、简历投递         | 🔄   |
 
 #### Week 1: 工程底座搭建
+
 - ✅ 创建项目文件夹及 Git 仓库
 - ✅ 配置 pyproject.toml 和 .env.example
 - ✅ 搭建 FastAPI 服务骨架（/health, /chat）
@@ -435,47 +443,56 @@ CHUNK_OVERLAP=200
 - ✅ 实现日志模块、错误处理
 
 #### Week 2: 检索与索引功能
+
 - ✅ 实现 RepoLoader 模块，加载本地文件
 - ✅ 实现文档分块（chunking）
 - ✅ 使用 sentence-transformers 生成向量嵌入
 - ✅ 实现 Qdrant 索引与查询
 
 #### Week 3: RAG 问答系统
+
 - ✅ 实现检索 + Prompt 拼接
 - ✅ 调用 llama.cpp / MiniMax API 进行推理
 - ✅ 返回带引用的回答
 
 #### Week 4: 评测功能
+
 - ✅ 创建 coderag_eval_v1.json 评测数据集
 - ✅ 实现 hit_rate@k、citation_rate、contains_rate 指标
 - ✅ 实现回归测试框架
 - ✅ 添加 /eval/run、/eval/results API
 
 #### Week 5: 检索优化
+
 - ✅ 优化 chunking 策略（按函数/类分块）
 - ✅ 实现 BM25 检索重排
 - ✅ 集成 HybridRetriever
 
 #### Week 6: LoRA 微调
+
 - ✅ 实现 LoRATrainer 类
 - ✅ 支持 LoRA/QLoRA 微调
 - ✅ 实现 base vs fine-tuned 对比评测
 
 #### Week 7: 前端开发
+
 - ✅ Vue3 + Vite 项目搭建
 - ✅ 实现 Chat、Dataset、Dashboard 页面
 - ✅ 集成 Element Plus UI
 
 #### Week 8: Docker 部署
+
 - ✅ 完善 docker-compose.yml
 - ✅ 实现一键启动（API + Qdrant + Frontend）
 
 #### Week 9: 性能压测
+
 - ✅ 实现 StressTestRunner
 - ✅ 支持并发压测
 - ✅ 延迟统计 P50/P95/P99
 
 #### Week 10: 安全防护
+
 - ✅ 输入验证：长度限制、危险字符过滤
 - ✅ 输出清理：HTML 转义、XSS 防护
 
@@ -518,10 +535,10 @@ lora_config = LoraConfig(
 
 ### Q4: 向量检索 vs 全文检索？
 
-| 类型 | 优点 | 缺点 |
-|------|------|------|
-| **向量检索** | 语义理解、同义词 | 计算量大 |
-| **全文检索** | 精确匹配速度快 | 无法理解语义 |
+| 类型         | 优点             | 缺点         |
+| ------------ | ---------------- | ------------ |
+| **向量检索** | 语义理解、同义词 | 计算量大     |
+| **全文检索** | 精确匹配速度快   | 无法理解语义 |
 
 **混合检索**结合两者优势，取长补短。
 
@@ -529,11 +546,11 @@ lora_config = LoraConfig(
 
 ## 📖 文档
 
-| 文档 | 说明 |
-|------|------|
-| **[面试项目介绍](./INTERVIEW_GUIDE.md)** | 面试必读：项目介绍话术、技术亮点 |
-| **[开发日志](./DEVELOPMENT_LOG.md)** | 完整开发历程、遇到的问题与解决方案 |
-| **[前端 MVP 指南](./前端 MVP 指南.md)** | 前端开发规范、技术栈说明 |
+| 文档                                     | 说明                               |
+| ---------------------------------------- | ---------------------------------- |
+| **[面试项目介绍](./INTERVIEW_GUIDE.md)** | 面试必读：项目介绍话术、技术亮点   |
+| **[开发日志](./DEVELOPMENT_LOG.md)**     | 完整开发历程、遇到的问题与解决方案 |
+| **[前端 MVP 指南](./前端 MVP 指南.md)**  | 前端开发规范、技术栈说明           |
 
 ---
 
