@@ -177,7 +177,10 @@ class Settings(BaseSettings):
         )
 
     class Config:
-        env_file = (".env.local", ".env")
+        env_file = (
+            Path(__file__).parent.parent.parent / ".env.local",
+            Path(__file__).parent.parent.parent / ".env"
+        )
         case_sensitive = False
         extra = "ignore"
 
