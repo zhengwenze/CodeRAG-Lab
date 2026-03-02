@@ -1,24 +1,5 @@
-version: '3.8'
+# CodeRAG Lab Docker Compose (简化版) - 快捷入口
+# 实际配置在 docker/docker-compose-simple.yml
 
-services:
-  # 简化版: 仅启动 API 服务 (需要外部向量数据库)
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data:/app/data
-      - ./models:/app/models
-    environment:
-      - VECTOR_STORE=qdrant
-      - QDRANT_HOST=${QDRANT_HOST:-localhost}
-      - QDRANT_PORT=${QDRANT_PORT:-6333}
-      - PGVECTOR_ENABLED=${PGVECTOR_ENABLED:-false}
-      - PGVECTOR_CONNECTION_STRING=${PGVECTOR_CONNECTION_STRING:-}
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-bge-small}
-      - LLM_PROVIDER=${LLM_PROVIDER:-llamacpp}
-      - LLAMACPP_HOST=${LLAMACPP_HOST:-localhost}
-      - LLAMACPP_PORT=${LLAMACPP_PORT:-8080}
-    restart: unless-stopped
+include:
+  - docker/docker-compose-simple.yml

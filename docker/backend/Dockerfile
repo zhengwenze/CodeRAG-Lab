@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml .
+COPY ../pyproject.toml .
 
 RUN pip install --no-cache-dir -e .
 
-COPY server/src/ /app/src/
+COPY ../server/src/ /app/src/
 
 RUN mkdir -p /app/logs /app/data
 

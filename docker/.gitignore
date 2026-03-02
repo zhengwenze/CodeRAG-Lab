@@ -1,0 +1,11 @@
+# Docker 构建产物
+docker/backend/__pycache__/
+docker/frontend/node_modules/
+docker/frontend/dist/
+
+# Docker 数据卷
+docker/pg-data/
+docker/qdrant_data/
+
+# 日志
+docker/logs/
