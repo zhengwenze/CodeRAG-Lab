@@ -1,5 +1,0 @@
-# CodeRAG Lab Docker Compose - 快捷入口
-# 实际配置在 docker/docker-compose.yml
-
-include:
-  - docker/docker-compose.yml
