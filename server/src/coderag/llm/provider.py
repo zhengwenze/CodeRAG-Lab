@@ -138,6 +138,7 @@ class MiniMaxProvider(LLMProvider):
     def generate(self, prompt: str, **kwargs) -> str:
         """生成回答（非流式）"""
         import requests
+        import json
         from coderag.settings import settings
         
         endpoint = f"{self.base_url}/text/chatcompletion_v2"
@@ -159,8 +160,20 @@ class MiniMaxProvider(LLMProvider):
             response = requests.post(endpoint, json=data, headers=self.headers)
             response.raise_for_status()
             result = response.json()
-            # TODO: 根据实际API响应格式调整
-            return result["choices"][0]["message"]["content"]
+            print(f"MiniMax API response: {json.dumps(result, indent=2)}")
+            # 尝试不同的响应格式
+            if "choices" in result and len(result["choices"]) > 0:
+                if "message" in result["choices"][0] and "content" in result["choices"][0]["message"]:
+                    return result["choices"][0]["message"]["content"]
+                elif "text" in result["choices"][0]:
+                    return result["choices"][0]["text"]
+            elif "text" in result:
+                return result["text"]
+            elif "content" in result:
+                return result["content"]
+            else:
+                print(f"Unexpected response format: {result}")
+                return "Sorry, I couldn't generate a response."
         except Exception as e:
             print(f"Error generating response: {e}")
             return "Sorry, I couldn't generate a response."

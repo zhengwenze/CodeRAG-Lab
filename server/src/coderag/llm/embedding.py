@@ -1,5 +1,4 @@
 from typing import List, Optional, Dict, Any
-from sentence_transformers import SentenceTransformer
 from coderag.settings import settings, EmbeddingModelConfig
 import logging
 
@@ -35,6 +34,7 @@ class EmbeddingProvider:
                             break
             
             try:
+                from sentence_transformers import SentenceTransformer
                 self.model = SentenceTransformer(self.model_name, device=self.config.device)
             except Exception as e:
                 logger.error(f"Failed to load model {self.model_name}: {e}")
