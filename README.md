@@ -554,19 +554,6 @@ lora_config = LoraConfig(
 
 ---
 
-## 🌐 仓库地址
-
-- **Gitee**: https://gitee.com/zwz050418/code-rag-lab
-- **GitHub**: https://github.com/zhengwenze/CodeRAG-Lab
-
----
-
-## 📝 License
-
-MIT License - 欢迎 Star 和 Contribution！
-
----
-
 <p align="center">
   Made with ❤️ by <a href="https://gitee.com/zwz050418">CodeRAG Team</a>
 </p>
