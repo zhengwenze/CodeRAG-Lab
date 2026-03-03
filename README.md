@@ -110,45 +110,38 @@
 
 ```mermaid
 graph TB
-    subgraph Frontend["前端层"]
-        A1[Vue3 + Element Plus]
-    end
-
-    subgraph API["API 服务层 FastAPI"]
-        B1[/chat<br/>问答接口/]
-        B2[/datasets<br/>数据集接口/]
-        B3[/eval<br/>评测接口/]
-        B4[/benchmark<br/>压测接口/]
-    end
-
-    subgraph RAG["RAG 核心层"]
-        C1[Retrieval<br/>混合检索]
-        C2[Rerank<br/>重排序]
-        C3[Prompt Builder<br/>提示词构建]
-    end
-
-    subgraph Store["存储层"]
-        D1[(Qdrant<br/>分布式向量库)]
-        D2[(FAISS<br/>本地向量库)]
-        D3[(PostgreSQL<br/>+ pgvector)]
-    end
-
-    subgraph LLM["模型层"]
-        E1[llama.cpp<br/>本地推理]
-        E2[MiniMax API<br/>云端 API]
-        E3[Ollama<br/>本地部署]
-    end
-
-    Frontend -->|HTTP/REST| API
-    API --> RAG
-    RAG --> Store
-    RAG --> LLM
-
-    style Frontend fill:#e1f5ff
-    style API fill:#fff3e0
-    style RAG fill:#f3e5f5
-    style Store fill:#e8f5e9
-    style LLM fill:#ffebee
+  subgraph Frontend["前端层"]
+    A1[Vue3 + Element Plus]
+  end
+  subgraph API["API 服务层（FastAPI）"]
+    B1[/chat<br/>问答接口/]
+    B2[/datasets<br/>数据集接口/]
+    B3[/eval<br/>评测接口/]
+  end
+  subgraph RAG["RAG 核心层"]
+    C1[检索 Retrieval]
+    C2[重排序 Rerank]
+    C3[Prompt Builder]<br/>提示词构建
+  end
+  subgraph Store["存储层"]
+    D1[(Qdrant)]
+    D2[(FAISS)]
+    D3[(PostgreSQL+pgvector)]
+  end
+  subgraph LLM["模型层"]
+    E1[llama.cpp]
+    E2[MiniMax API]
+    E3[Ollama]
+  end
+  Frontend -->|HTTP/REST| API
+  API --> RAG
+  RAG --> Store
+  RAG --> LLM
+  style Frontend fill:#e1f5ff
+  style API fill:#fff3e0
+  style RAG fill:#f3e5f5
+  style Store fill:#e8f5e9
+  style LLM fill:#ffebee
 ```
 
 ---
