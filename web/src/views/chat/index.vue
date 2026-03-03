@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, Promotion } from '@element-plus/icons-vue'
 import { chat } from '@/api/chat'
@@ -78,12 +78,37 @@ import { renderMarkdown } from '@/utils/markdown'
 const formatMessage = (content) => renderMarkdown(content)
 
 const messages = ref([])
+const STORAGE_KEY = 'coderag_chat_history'
 const inputMessage = ref('')
 const loading = ref(false)
 const messagesRef = ref(null)
 
 // 将后端返回的 Markdown 渲染为安全的 HTML，由外部工具处理
 // 具体实现交给 web/src/utils/markdown.js
+
+// 1) 从本地存储恢复历史记录
+onMounted(() => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        messages.value = parsed
+      }
+    }
+  } catch {
+    // 忽略解析错误，保持空历史
+  }
+})
+
+// 2) 将聊天历史持续写回本地存储
+watch(messages, (val) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val))
+  } catch {
+    // 写入失败时忽略，继续工作
+  }
+}, { deep: true })
 
 const handleCtrlEnter = () => {
   inputMessage.value += '\n'
