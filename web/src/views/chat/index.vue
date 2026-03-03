@@ -72,14 +72,28 @@ import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, Promotion } from '@element-plus/icons-vue'
 import { chat } from '@/api/chat'
+import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
 
 const messages = ref([])
 const inputMessage = ref('')
 const loading = ref(false)
 const messagesRef = ref(null)
 
+// 将回答中的 Markdown 渲染为 HTML，并进行 XSS 过滤
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
+const sanitizeHtml = (html) => {
+  // dompurify 在浏览器环境下工作良好，兼容性视打包情况而定
+  try {
+    return (DOMPurify?.sanitize ? DOMPurify.sanitize(html) : html)
+  } catch {
+    return html
+  }
+}
 const formatMessage = (content) => {
-  return content.replace(/\n/g, '<br>')
+  if (!content) return ''
+  const rendered = md.render(content)
+  return sanitizeHtml(rendered)
 }
 
 const handleCtrlEnter = () => {
