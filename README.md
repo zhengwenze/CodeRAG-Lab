@@ -24,7 +24,11 @@
 </p>
 
 ---
+## 快速开始（合并自 USAGE.md）
 
+完整使用教程请见 USAGE.md 的内容。以下是简要入口：
+ - 打开 http://localhost:5173 即可进入前端界面
+ - 后端健康检查：/health、对话接口：/chat 等 API 示例在 USAGE.md 中给出
 ## 使用教程（合并自 USAGE.md）
 
 以下内容来自 USAGE.md 的使用教程，已合并到此 README 中，方便快速查看。
