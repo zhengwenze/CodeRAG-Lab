@@ -74,6 +74,8 @@ import { Loading, Promotion } from '@element-plus/icons-vue'
 import { chat } from '@/api/chat'
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism.css'
 
 const messages = ref([])
 const inputMessage = ref('')
@@ -81,7 +83,23 @@ const loading = ref(false)
 const messagesRef = ref(null)
 
 // 将回答中的 Markdown 渲染为 HTML，并进行 XSS 过滤
-const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
+// 使用 Prism 进行代码高亮
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight: (str, lang) => {
+    if (lang && Prism.languages[lang]) {
+      try {
+        // 对代码进行高亮并包装在 pre/code 块中
+        return `<pre class="language-${lang}"><code>${Prism.highlight(str, Prism.languages[lang], lang)}</code></pre>`
+      } catch (e) {
+        // 兜底回退
+      }
+    }
+    return md.utils.escapeHtml(str)
+  }
+})
 const sanitizeHtml = (html) => {
   // dompurify 在浏览器环境下工作良好，兼容性视打包情况而定
   try {
