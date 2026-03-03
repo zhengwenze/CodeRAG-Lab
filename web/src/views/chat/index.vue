@@ -72,48 +72,18 @@ import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, Promotion } from '@element-plus/icons-vue'
 import { chat } from '@/api/chat'
-import MarkdownIt from 'markdown-it'
-import DOMPurify from 'dompurify'
-import Prism from 'prismjs'
-import 'prismjs/themes/prism.css'
+import { renderMarkdown } from '@/utils/markdown'
+
+// 将 Markdown 内容渲染为 HTML 的桥接函数
+const formatMessage = (content) => renderMarkdown(content)
 
 const messages = ref([])
 const inputMessage = ref('')
 const loading = ref(false)
 const messagesRef = ref(null)
 
-// 将回答中的 Markdown 渲染为 HTML，并进行 XSS 过滤
-// 使用 Prism 进行代码高亮
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  highlight: (str, lang) => {
-    if (lang && Prism.languages[lang]) {
-      try {
-        // 对代码进行高亮并包装在 pre/code 块中
-        return `<pre class="language-${lang}"><code>${Prism.highlight(str, Prism.languages[lang], lang)}</code></pre>`
-      } catch (e) {
-        // 兜底回退
-      }
-    }
-    return md.utils.escapeHtml(str)
-  }
-})
-const sanitizeHtml = (html) => {
-  // dompurify 在浏览器环境下工作良好，兼容性视打包情况而定
-  try {
-    return (DOMPurify?.sanitize ? DOMPurify.sanitize(html) : html)
-  } catch {
-    return html
-  }
-}
-const renderMarkdown = (content) => {
-  if (!content) return ''
-  const rendered = md.render(content)
-  return sanitizeHtml(rendered)
-}
-const formatMessage = (content) => renderMarkdown(content)
+// 将后端返回的 Markdown 渲染为安全的 HTML，由外部工具处理
+// 具体实现交给 web/src/utils/markdown.js
 
 const handleCtrlEnter = () => {
   inputMessage.value += '\n'

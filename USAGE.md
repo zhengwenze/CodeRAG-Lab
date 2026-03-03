@@ -144,3 +144,15 @@ curl -X POST http://localhost:8000/datasets \
 ---
 
 如有问题，请查看项目 README 或提交 Issue。
+### Markdown 渲染与代码高亮
+
+- 前端输出的回答现在支持将 Markdown 直接渲染为 HTML，并对代码块进行语法高亮显示。
+- 实现要点：使用 MarkdownIt 渲染 Markdown；使用 PrismJS 提供代码高亮；使用 DOMPurify 做输出过滤，防止 XSS。
+- 验证方法：在后端返回包含 Markdown 的回答时，前端应正确显示格式化后的内容并高亮代码块。
+- 快速测试示例：发送包含如下内容的回答文本：
+  ```markdown
+  ```js
+  console.log('Hello CodeRAG')
+  ```
+  ```
+- 如需进一步定制：可添加更多语言的 Prism 语言包、支持主题切换、或缓存渲染结果以提高性能。
