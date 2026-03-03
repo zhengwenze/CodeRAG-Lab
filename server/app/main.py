@@ -1,4 +1,8 @@
 from fastapi import FastAPI, HTTPException, Request
+from typing import Optional
+import json
+from pathlib import Path
+import uuid
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -78,6 +82,34 @@ async def health_check(request: Request):
         timestamp=datetime.utcnow(),
         version="0.1.0",
     )
+
+@app.post("/chat/history")
+async def save_chat_history(request: Request):
+    data = await request.json()
+    session_id = data.get("session_id")
+    messages = data.get("messages", [])
+    if not isinstance(messages, list):
+        raise HTTPException(status_code=400, detail="messages must be a list")
+    if not session_id:
+        session_id = str(uuid.uuid4())
+    histories_dir = Path(settings.data_dir) / "chat_histories"
+    histories_dir.mkdir(parents=True, exist_ok=True)
+    hist_path = histories_dir / f"{session_id}.json"
+    with open(hist_path, "w", encoding="utf-8") as f:
+        json.dump(messages, f, ensure_ascii=False, indent=2)
+    return {"session_id": session_id, "saved": True, "count": len(messages)}
+
+
+@app.get("/chat/history")
+async def load_chat_history(session_id: Optional[str] = None):
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+    hist_path = Path(settings.data_dir) / "chat_histories" / f"{session_id}.json"
+    if not hist_path.exists():
+        return {"session_id": session_id, "messages": []}
+    with open(hist_path, "r", encoding="utf-8") as f:
+        messages = json.load(f)
+    return {"session_id": session_id, "messages": messages}
 
 
 @app.get("/config")
