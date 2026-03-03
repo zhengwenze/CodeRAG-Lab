@@ -72,12 +72,16 @@ import { ref, nextTick, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading, Promotion } from '@element-plus/icons-vue'
 import { chat } from '@/api/chat'
+import { loadHistory, saveHistory } from '@/api/chat'
 import { renderMarkdown } from '@/utils/markdown'
 
 // 将 Markdown 内容渲染为 HTML 的桥接函数
 const formatMessage = (content) => renderMarkdown(content)
 
 const messages = ref([])
+const sessionIdKey = 'coderag_session_id'
+const STORAGE_KEY = 'coderag_chat_history'
+const sessionId = ref(null)
 const STORAGE_KEY = 'coderag_chat_history'
 const inputMessage = ref('')
 const loading = ref(false)
@@ -85,6 +89,42 @@ const messagesRef = ref(null)
 
 // 将后端返回的 Markdown 渲染为安全的 HTML，由外部工具处理
 // 具体实现交给 web/src/utils/markdown.js
+// 1) 恢复历史记录（跨路由持久化）
+onMounted(async () => {
+  // 会话 ID 初始化
+  let sid = localStorage.getItem(sessionIdKey)
+  if (!sid) {
+    sid = (typeof crypto !== 'undefined' && crypto?.randomUUID) ? crypto.randomUUID() : 'sess_' + Date.now() + '_' + Math.floor(Math.random() * 1e6)
+    localStorage.setItem(sessionIdKey, sid)
+  }
+  sessionId.value = sid
+  try {
+    const resp = await loadHistory(sid)
+    const hist = resp?.messages || []
+    if (Array.isArray(hist) && hist.length > 0) {
+      hist.forEach((m) => {
+        if (m?.role && m?.content !== undefined) {
+          messages.value.push({ role: m.role, content: m.content, references: m.references || [] })
+        }
+      })
+    }
+  } catch {
+    // ignore history load errors
+  }
+})
+
+// 2) 将聊天历史持续写回后端（随对话更新）
+watch(messages, (val) => {
+  try {
+    const sid = sessionId.value
+    if (sid) {
+      const toStore = val.map((m) => ({ role: m.role, content: m.content }))
+      saveHistory(sid, toStore)
+    }
+  } catch {
+    // ignore save errors
+  }
+}, { deep: true })
 
 // 1) 从本地存储恢复历史记录
 onMounted(() => {
