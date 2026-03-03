@@ -233,6 +233,19 @@ npm run dev
 
 你也可以将此现场演示脚本整理成一个简短的视频或 GIF，用于求职时的现场演示。
 
+## 一键启动脚本
+将后端、前端、Qdrant 一键启动，方便你在本地快速演示工作流。
+如何使用：
+- 给脚本执行权限：
+```
+chmod +x docker/start_all.sh
+```
+- 运行脚本：
+```
+./docker/start_all.sh
+```
+说明：脚本会在 docker 目录下执行 `docker-compose up -d`，实例包括 Qdrant、后端 API、前端 UI。
+
 ## 💬 API 示例
 
 ### 1. 健康检查
