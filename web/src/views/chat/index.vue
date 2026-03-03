@@ -82,7 +82,6 @@ const messages = ref([])
 const sessionIdKey = 'coderag_session_id'
 const STORAGE_KEY = 'coderag_chat_history'
 const sessionId = ref(null)
-const STORAGE_KEY = 'coderag_chat_history'
 const inputMessage = ref('')
 const loading = ref(false)
 const messagesRef = ref(null)
@@ -125,21 +124,6 @@ watch(messages, (val) => {
     // ignore save errors
   }
 }, { deep: true })
-
-// 1) 从本地存储恢复历史记录
-onMounted(() => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        messages.value = parsed
-      }
-    }
-  } catch {
-    // 忽略解析错误，保持空历史
-  }
-})
 
 // 2) 将聊天历史持续写回本地存储
 watch(messages, (val) => {
