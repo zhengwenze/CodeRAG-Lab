@@ -108,11 +108,12 @@ const sanitizeHtml = (html) => {
     return html
   }
 }
-const formatMessage = (content) => {
+const renderMarkdown = (content) => {
   if (!content) return ''
   const rendered = md.render(content)
   return sanitizeHtml(rendered)
 }
+const formatMessage = (content) => renderMarkdown(content)
 
 const handleCtrlEnter = () => {
   inputMessage.value += '\n'
